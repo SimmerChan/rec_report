@@ -133,7 +133,7 @@ Level 3: [0-511] → 细粒度语义（具体内容区分）
 
 | 路线 | 代表工作 | 核心问题 | 激进程度 |
 |------|---------|---------|---------|
-| **端到端生成式** | Meta GR, OneRec(快手), OnePiece(腾讯) | 完全替代级联架构, NTP Loss, 自回归生成 | 颠覆式 |
+| **端到端生成式** | Meta GR, OneRec(快手) | 完全替代级联架构, NTP Loss, 自回归生成 | 颠覆式 |
 | **Semantic ID 生成式** | Google TIGER, 快手 OneRec(Semantic版) | RQ-Kmeans 量化 ID, NTP Loss | 颠覆式 |
 | **Transformer 序列建模 + 判别式 CTR** | 字节 RankMixer, 美团 MTGR, 百度 GRAB | Transformer 做序列建模, 二分类交叉熵 | 渐进式 |
 | **LLM 增强推荐** | 字节 HLLM, 阿里 LUM, 京东 xLLM | LLM 作为特征增强模块嵌入现有系统 | 稳健式 |
