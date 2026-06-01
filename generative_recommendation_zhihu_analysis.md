@@ -269,12 +269,12 @@ Level 3: [0-511] → 细粒度语义（具体内容区分）
 - Representation Unlearning：预训练MLLM的embedding被冻结，无法端到端优化
 
 **INFNet**：
-- 全名：Aggregate and Broadcast: Scalable and Efficient Feature Interaction for Recommender Systems
-- arXiv：[2508.11565](https://arxiv.org/abs/2508.11565)
+- 全名：INFNet: A Task-aware Information Flow Network for Large-Scale Recommendation Systems
+- 链接：https://arxiv.org/html/2508.11565v1
 - 机构：快手
-- 核心问题：特征交互的二次复杂度瓶颈 + 行为序列早期压缩丢失细粒度信号 + 任务信号注入时机晚
-- 解决方案：Information Flow Network —— Hub Token聚合广播机制，将复杂度从O(n²)降到线性O(n)
-- 线上效果：商业广告系统营收+1.587%，点击率+1.155%
+- 核心问题：海量分类/序列特征的全两两交互计算代价极高 + 多任务场景下特征交互模块在多任务层之前（late-fusion）限制了多任务建模能力
+- 解决方案：Information Flow Network —— 三类Token（分类/序列/任务）+ 双重信息流设计（异构+同质交替），异构流用代理交叉注意力实现高效跨模态交互，同质流用代理门控单元(PGU)做细粒度同类型特征处理
+- 线上效果：商业广告系统营收+1.587%，CTR+1.155%
 
 ---
 
@@ -682,7 +682,7 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 | MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
 | SSR | 阿里 | 2026 | SIGIR 2026 | 显式稀疏性设计 |
 | EGA-V2 | 美团 | 2025 | [arXiv:2505.17549](https://arxiv.org/abs/2505.17549) | 工业广告端到端生成 |
-| INFNet | 快手 | 2025 | [arXiv:2508.11565](https://arxiv.org/abs/2508.11565) | 特征交互网络,线性复杂度 |
+| INFNet | 快手 | 2025 | [2508.11565](https://arxiv.org/html/2508.11565v1)（HTML版） | 特征交互网络,多任务学习 |
 
 ### B. 知乎话题来源
 
