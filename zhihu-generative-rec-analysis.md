@@ -77,12 +77,6 @@
   状态: "阿里在GR方向没有拿得出手的公开工作"
   知乎评价: 业界期待更多公开分享
 
-【腾讯/Shopee】2025年 — 统一Scaling Law
-  技术: OnePiece + ColaRec
-  核心: 协作语义ID，统一Encoder-Decoder，双路径Scaling Law
-  验证: 腾讯广告算法大赛2025年主题为生成式推荐
-  转向: 2026年主题换为统一推荐(UniRec)
-
 【百度】2026年2月 — 最新工作
   技术: GRAB (Generative Recommendation with Abstention Behavior)
   核心: LLM启发的序列优先CTR，STS训练策略
@@ -156,7 +150,7 @@
 ================================================================================
 
 【路线一: 生成式GR路线】
-  代表厂商: Meta GR, 快手OneRec, 美团MTGR, 腾讯OnePiece
+  代表厂商: Meta GR, 快手OneRec, 美团MTGR
   技术主张: 端到端生成，统一建模，Next Token Prediction
   核心优势:
   - 消除级联误差传播
@@ -180,7 +174,7 @@
                        将判别模型能力scaling到新高度"
 
 【路线三: 混合架构路线】
-  代表厂商: 美团MTGR, 腾讯OnePiece
+  代表厂商: 美团MTGR
   技术主张: 兼容传统DLRM特征体系，逐步演进
   核心优势:
   - 信息损失小
