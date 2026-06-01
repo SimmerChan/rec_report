@@ -29,7 +29,7 @@
 ### 1.2 生成式推荐时代（2024-2026）
 
 ```
-Meta GR(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(2026)
+Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(2026)
 ```
 
 **三条技术路线**：
@@ -45,78 +45,60 @@ Meta GR(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(2026)
 
 ## 二、核心论文深度解析
 
-### 2.1 Meta GR — 生成式推荐开山之作
+### 2.1 Meta GR/HSTU — 生成式推荐开山之作（同一篇论文）
+
+> ⚠️ **重要修正**：Meta GR 和 HSTU 是同一篇论文（arXiv:2402.17152），并非两篇独立工作。原报告误将其拆分为两节，特此合并说明。
 
 **论文信息**：
-- 全名：Generative Recommendation: A New Paradigm for Recommendation System
+- 全名：Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations
+- arXiv: [2402.17152](https://arxiv.org/abs/2402.17152)
+- 会议：ICML 2024
 - 机构：Meta（原Facebook）
-- 时间：2024年
+- 参数规模：1.5万亿参数
+
+> 注：原报告曾流传"Generative Recommendation: A New Paradigm for Recommendation System"这篇不存在的论文，特此更正。该论文在 arXiv 上并无记录，Meta GR 的真实标题为上方的 Actions Speak Loou Than Words 系列。
 
 **核心创新**：
 
 ```
-1. NTP Loss替代CTR Loss
+1. NTP Loss 替代 CTR Loss
    L = -Σ log P(item_t | item_{t-1}, ..., item_0)
 
 2. 双序列设计
    - 主序列：用户行为时间序列
    - 副序列：物品属性序列
 
-3. 多模态特征统一序列化
-   - 文本、图像、行为统一编码
+3. 推荐系统 Scaling Law 验证
+   - 效果随模型规模可预测提升
+   - 打破传统 DLRM 的天花板
+
+4. GPU 利用率优化
+   - MFU 从传统 CTR 的 ~5% 提升至 ~17%
 ```
 
 **工业验证**：
-- Meta主APP上线，A/B测试CTR提升12.4%
-- 但知乎讨论中多位专家（如沈怡涛、马进）指出工业跟进效果褒贬不一
+- Meta 主 APP 上线，A/B 测试 CTR 提升 12.4%（知乎讨论中多位专家指出工业跟进效果褒贬不一）
+- 首次在工业级推荐系统验证 Scaling Law
+- 为后续工作奠定技术基础
 
-**核心争议**（知乎正方vs反方）：
+**核心争议**（知乎正方 vs 反方）：
 
 | 观点 | 支持者 | 核心论据 |
 |------|--------|---------|
-| 乐观派 | 王喆、GuoXun | Scaling Law+超长序列+工程收益 |
-| 质疑派 | 陈东文、马进 | Ground Truth缺失、泛化问题、冷启动困境 |
+| 乐观派 | 王喆、GuoXun | Scaling Law + 超长序列 + 工程收益 |
+| 质疑派 | 陈东文、马进 | Ground Truth 缺失、泛化问题、冷启动困境 |
 
 ---
 
-### 2.2 HSTU — 推荐系统Scaling Law先驱
-
-**论文信息**：
-- 全名：Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations
-- arXiv: 2402.17152
-- 会议：ICML 2024
-- 机构：Meta
-- 参数规模：1.5万亿参数
-
-**核心创新**：
-
-```
-1. 超长序列Transformer架构
-   - 直接输入完整用户行为序列
-   - 自注意力机制建模长期兴趣
-
-2. 推荐系统Scaling Law验证
-   - 效果随模型规模可预测提升
-   - 打破传统DLRM的天花板
-
-3. GPU利用率优化
-   - MFU从传统CTR的~5%提升至~17%
-```
-
-**工业意义**：
-- 首次在工业级推荐系统验证Scaling Law
-- 在线A/B测试提升12.4%（与Meta GR报告一致）
-- 为后续工作奠定技术基础
-
----
-
-### 2.3 OneRec — 端到端颠覆式路线
+### 2.2 OneRec — 端到端颠覆式路线
 
 **论文信息**：
 - 全名：OnePiece: The Great Route to Generative Recommendation -- A Case Study from Tencent Algorithm Competition
-- arXiv: 2512.07424
-- 机构：快手
-- 时间：2025年2月
+- arXiv: [2512.07424](https://arxiv.org/abs/2512.07424)
+- 机构：腾讯算法竞赛团队（非快手官方论文）
+- 时间：2025年12月（原报告误写为2月，特此更正）
+
+> ⚠️ 注：此论文为腾讯算法竞赛参赛作品，非快手官方发表。快手是否另有 OneRec 官方论文待查，此处以 arXiv 实际记录为准。
 
 **三大技术创新**：
 
@@ -169,7 +151,7 @@ OneRec：
 
 ---
 
-### 2.4 TIGER — Semantic ID + Transformer生成式召回
+### 2.3 TIGER — Semantic ID + Transformer生成式召回
 
 **论文信息**：
 - 机构：Google
@@ -195,7 +177,7 @@ OneRec：
 
 ---
 
-### 2.5 RankMixer — 渐进式判别式升级
+### 2.4 RankMixer — 渐进式判别式升级
 
 **论文信息**：
 - 机构：字节跳动
@@ -224,19 +206,22 @@ OneRec：
 
 ---
 
-### 2.6 Ultra-HSTU — 稀疏注意力极致优化
+### 2.5 Meta — Bending the Scaling Law Curve（Ultra-HSTU）
 
 **论文信息**：
-- arXiv: 2602.16986
+- 全名：Bending the Scaling Law Curve in Large-Scale Recommendation Systems
+- arXiv: [2602.16986](https://arxiv.org/abs/2602.16986)
 - 机构：Meta
 - 时间：2026年2月
+
+> 注：此论文常被称为"Ultra-HSTU"，但真实标题为"Bending the Scaling Law Curve..."，原报告标题有误，特此更正。
 
 **核心创新**：
 
 ```
 1. 稀疏注意力机制极致优化
-   - 在HSTU基础上进一步优化MFU
-   - 消费+4~8%（推测为计算效率提升）
+   - 在 HSTU 基础上进一步优化 MFU
+   - 消费 +4~8%（推测为计算效率提升）
 
 2. 推荐系统推理优化深水区
    - 解决自回归生成的高延迟问题
@@ -244,7 +229,7 @@ OneRec：
 
 ---
 
-### 2.7 快手One系列全景
+### 2.6 快手One系列全景
 
 | 时间 | 工作 | 核心贡献 |
 |------|------|---------|
@@ -263,7 +248,7 @@ OneRec：
 
 ---
 
-### 2.8 阿里SSR — 显式稀疏性设计
+### 2.7 阿里SSR — 显式稀疏性设计
 
 **论文信息**：
 - 会议：SIGIR 2026
@@ -288,7 +273,7 @@ OneRec：
 
 ---
 
-### 2.9 百度GRAB — Sequence-Then-Sparse训练策略
+### 2.8 百度GRAB — Sequence-Then-Sparse训练策略
 
 **论文信息**：
 - arXiv: 2602.01865（推测）
@@ -306,7 +291,7 @@ Sequence-Then-Sparse (STS) 训练策略
 
 ---
 
-### 2.10 美团MTGR/SUAN — 状态空间模型探索
+### 2.9 美团MTGR/SUAN — 状态空间模型探索
 
 **代表工作**：
 - MTGR：美团生成式推荐
@@ -318,7 +303,7 @@ Sequence-Then-Sparse (STS) 训练策略
 
 ---
 
-### 2.11 其他重要工作
+### 2.10 其他重要工作
 
 | 工作 | 机构 | 特点 |
 |------|------|------|
@@ -658,13 +643,14 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 
 | 算法 | 机构 | 年份 | arXiv/会议 | 核心贡献 |
 |------|------|------|-----------|---------|
-| Meta GR | Meta | 2024 | arXiv:2402.01115 | NTP Loss开山之作 |
-| HSTU | Meta | 2024 | arXiv:2402.17152 | 1.5T参数,Scaling Law |
-| OneRec | 快手 | 2025 | arXiv:2512.07424 | 端到端生成,Scaling Laws |
-| Ultra-HSTU | Meta | 2026 | arXiv:2602.16986 | 稀疏注意力优化 |
-| RankMixer | 字节 | 2025 | CIKM 2025 | Token-Mixing判别式升级 |
+| Meta GR | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 生成式推荐开山之作,NTP Loss |
+| HSTU | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 与Meta GR为同一篇论文,1.5T参数,Scaling Law |
+| OneRec | 腾讯 | 2025 | [arXiv:2512.07424](https://arxiv.org/abs/2512.07424) | 端到端生成,腾讯竞赛作品 |
+| Ultra-HSTU | Meta | 2026 | [arXiv:2602.16986](https://arxiv.org/abs/2602.16986) | 稀疏注意力优化 |
+| RankMixer | 字节 | 2025 | [arXiv:2507.15551](https://arxiv.org/abs/2507.15551) | Token-Mixing判别式升级 |
+| MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
 | SSR | 阿里 | 2026 | SIGIR 2026 | 显式稀疏性设计 |
-| QARM | 快手 | 2024 | - | 多模态对齐 |
+| EGA-V2 | 美团 | 2025 | [arXiv:2505.17549](https://arxiv.org/abs/2505.17549) | 工业广告端到端生成 |
 | INFNet | 快手 | 2025 | - | 信息瓶颈理论 |
 
 ### B. 知乎话题来源
