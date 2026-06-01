@@ -604,7 +604,6 @@ RankMixer → TokenMixer-Large → MSN → UG-Separation → LONGER → STCA →
 |------|------|------|
 | 百度 | GRAB | 判别式CTR预测，STS训练策略 |
 | 美团 | MTGR, HoMer, SUAN | 判别式CTR系列（Transformer序列建模） |
-| 虾皮 | OnePiece | 统一召回排序模型 |
 | 小红书 | GenRank | 生成式重排序 |
 | LinkedIn | LiGR | 大模型推荐 |
 | Meta | WuKong | 多语言场景生成式推荐 |
