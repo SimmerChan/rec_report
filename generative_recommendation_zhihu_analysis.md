@@ -139,7 +139,7 @@ Session-wise generation：
 
 ---
 
-### 2.3 OnePiece — 腾讯算法竞赛作品（非快手官方）
+### 2.3 OnePiece — 腾讯算法竞赛参赛作品
 
 **论文信息**：
 - 全名：OnePiece: The Great Route to Generative Recommendation -- A Case Study from Tencent Algorithm Competition
