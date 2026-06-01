@@ -245,29 +245,10 @@ Level 3: [0-511] → 细粒度语义（具体内容区分）
 
 * * *
 
-## 七、论文汇总表
-
-方便有兴趣深挖的同学按图索骥：
-
-| 论文 | 机构 | arXiv | 核心贡献 |
-|------|------|-------|---------|
-| Actions Speak Louder than Words (GR/HSTU) | Meta | 2402.17152 | 生成式推荐开山，验证 Scaling Law |
-| OneRec | 快手 | 2502.18965 | 端到端生成式推荐工业落地 |
-| OnePiece | 腾讯 | 2512.07424 | 统一编码器-解码器框架验证 |
-| RankMixer | 字节 | CIKM 2025 | Token-Mixing 渐进式升级 |
-| Bending the Scaling Law Curve (Ultra-HSTU) | Meta | 2602.16986 | 稀疏注意力极致优化 |
-| TIGER | Google | - | Semantic ID 生成式召回 |
-| MTGR | 美团 | - | 状态空间模型探索 |
-| SSR | 阿里 | SIGIR 2026 | 显式稀疏性设计 |
-
-* * *
-
 ## 八、参考资料
 
-1. [Meta GR/HSTU arXiv:2402.17152](https://arxiv.org/abs/2402.17152)
-2. [OneRec arXiv:2502.18965](https://arxiv.org/abs/2502.18965)
-3. [OnePiece arXiv:2512.07424](https://arxiv.org/abs/2512.07424)
-4. [Ultra-HSTU arXiv:2602.16986](https://arxiv.org/abs/2602.16986)
+1. [生成式推荐是未来还是伪范式？ - 知乎](https://www.zhihu.com/question/664374659)
+2. [生成式推荐会成为下一代推荐系统的范式吗？ - 知乎](https://www.zhihu.com/question/637067237)
 
 ---
 
