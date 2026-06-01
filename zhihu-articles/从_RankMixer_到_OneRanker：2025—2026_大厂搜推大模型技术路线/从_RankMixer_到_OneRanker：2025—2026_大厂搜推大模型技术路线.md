@@ -160,7 +160,7 @@ RankMixer、TokenMixer-Large、MSN、SORT、Feed-SR、MTFM 这一组工作表明
 
 另一条线同样清晰：生成式推荐已经走过仅在 retrieval 试水的阶段，开始进入主排序、广告与电商推荐链路。
 
-OneRec、MTGR、RankGPT、GPR、OneRanker、GR4AD、OxygenREC、OneMall 这一批工作说明，**生成式推荐的产业化推进已经不再是 academic prototype，而是在广告、电商与内容分发等高价值场景中形成体系化落地。** 尤其广告领域推进更快，因为广告天然面临多目标优化、页面级生成、value alignment 与全局收益优化等问题，而这些问题与生成式框架的建模方式天然契合。
+OneRec、RankGPT、GPR、OneRanker、GR4AD、OxygenREC、OneMall 这一批工作说明，**生成式推荐的产业化推进已经不再是 academic prototype，而是在广告、电商与内容分发等高价值场景中形成体系化落地。** 尤其广告领域推进更快，因为广告天然面临多目标优化、页面级生成、value alignment 与全局收益优化等问题，而这些问题与生成式框架的建模方式天然契合。
 
 ### 趋势三：semantic token 正在从“表示技巧”上升为“系统级接口”
 
