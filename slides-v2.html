@@ -1842,14 +1842,7 @@ Self-Attention: O(n²) 复杂度<br/>
           <td>65x FLOPs提升, 广告端到端</td>
           <td>多篇论文积累</td>
         </tr>
-        <tr>
-          <td><span class="tag tag-b">腾讯/Shopee</span></td>
-          <td>OnePiece → GPR/OneRanker</td>
-          <td>上下文工程 → 广告one-model深融合，三层矛盾处理</td>
-          <td><span style="color:var(--amber);">学术深耕</span></td>
-          <td>GMV+2%/UU, 广告+2.90%</td>
-          <td>Shopee主搜+广告</td>
-        </tr>
+        
         <tr>
           <td><span class="tag tag-r">阿里</span></td>
           <td>LUM/SSR + SORT(判别式另一条路)</td>
@@ -1918,7 +1911,6 @@ Self-Attention: O(n²) 复杂度<br/>
 graph TB
     %% 2023: Google TIGER
     G1["（Google）TIGER 2023 RQ-VAE语义ID"] --> K1["（快手）OneRec 2025.2 端到端生成式"]
-    G1 --> T1["（腾讯）OnePiece 2025.9 协作语义ID"]
 
     %% 2024.2: Meta GR/HSTU
     M1["（Meta）GR/HSTU 2024.2 ICML 2024,+12.4%"] --> MT1["（美团）MTGR 2025.8 保留交叉特征"]
@@ -2000,7 +1992,7 @@ graph TB
     <div class="grid grid-2" style="gap:10px;">
       <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
         <strong style="color:var(--cyan);">语义ID路线</strong><br/>
-        Google TIGER · 快手OneRec · 腾讯OnePiece<br/>
+        Google TIGER · 快手OneRec<br/>
         受限解码空间 · RQ-Kmeans量化 · 冷启动友好
       </div>
       <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
@@ -2216,33 +2208,7 @@ graph TD
         </div>
       </div>
     </div>
-    <div>
-      <h4>腾讯/Shopee：上下文工程 → 广告深融合</h4>
-      <div class="paper-ref" style="margin-top:8px;">
-        <div class="title">OnePiece: Bringing Context Engineering to Cascade Ranking</div>
-        <div class="meta">腾讯/Shopee · arXiv:2509.18091 · 2025.9</div>
-        <div class="abstract">LLM式上下文工程注入推荐，Block-wise隐式推理。<strong style="color:var(--green);">Shopee主搜索GMV+2%/UU, 广告+2.90%</strong>。</div>
-      </div>
-      <div class="paper-ref" style="margin-top:6px;">
-        <div class="title">GPR / OneRanker 2026: 广告one-model深融合</div>
-        <div class="meta">腾讯/Shopee · 2026</div>
-        <div class="abstract">GPR: 端到端生成广告，统一输入schema + 多级semantic ID<br/>OneRanker: 处理三层深层矛盾（兴趣vs商业、target awareness、生成vs排序信息断裂）</div>
-      </div>
-      <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--green);">+2%</div>
-          <div class="stat-label">GMV/UU</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--green);">+2.9%</div>
-          <div class="stat-label">广告收入</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--purple);">三层</div>
-          <div class="stat-label">深层矛盾</div>
-        </div>
-      </div>
-    </div>
+    
   </div>
   <div class="grid grid-2" style="margin-top:12px; gap:12px;">
     <div>
@@ -2307,7 +2273,7 @@ graph TD
     <div class="card card-g">
       <h4 style="color:var(--green);">💡 看好派核心论据</h4>
       <div style="font-size:0.82em; margin-top:8px; line-height:1.6;">
-        <p><strong>傅聪Cong（OnePiece发明者）</strong>："生成式推荐不是伪范式，而是未来，这是因为传统推荐范式无法具备scaling law。"</p>
+        
         <p style="margin-top:6px;"><strong>青荇无言</strong>："底层逻辑从'匹配'转向'生成-推理'...当算力成本继续下降，这种'压缩即性能'的路线会进一步放大优势。"</p>
         <p style="margin-top:6px;"><strong>九河之间</strong>："字节RankMixer在判别式精排模型上实现了Scaling Law——'极致进化'而非'范式革命'。当前判别式仍是基石，生成式是前沿探索。"</p>
         <p style="margin-top:6px;"><strong>Xavier</strong>："重要的不是目前已有的生成式方法孰优孰劣，而是在头部搜广推业务里，模型、数据规模见顶的情况下，到底下一步应该怎么走。"</p>
