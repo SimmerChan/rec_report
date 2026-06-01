@@ -288,7 +288,7 @@ Sequence-Then-Sparse (STS) 训练策略
 ### 2.9 美团MTGR/SUAN — 状态空间模型探索
 
 **代表工作**：
-- MTGR：美团生成式推荐
+- MTGR：美团判别式CTR
 - SUAN：Mamba状态空间模型在推荐中的应用
 
 **技术特点**：
@@ -642,7 +642,7 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 | OneRec | 快手 | 2025 | [arXiv:2502.18965](https://arxiv.org/abs/2502.18965) | 端到端生成,Sparse MoE,IPA对齐 |
 | Ultra-HSTU | Meta | 2026 | [arXiv:2602.16986](https://arxiv.org/abs/2602.16986) | 稀疏注意力优化 |
 | RankMixer | 字节 | 2025 | [arXiv:2507.15551](https://arxiv.org/abs/2507.15551) | Token-Mixing判别式升级 |
-| MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
+| MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级判别式CTR框架 |
 | SSR | 阿里 | 2026 | SIGIR 2026 | 显式稀疏性设计 |
 | EGA-V2 | 美团 | 2025 | [arXiv:2505.17549](https://arxiv.org/abs/2505.17549) | 工业广告端到端生成 |
 | INFNet | 快手 | 2025 | [2508.11565](https://arxiv.org/html/2508.11565v1)（HTML版） | 特征交互网络,多任务学习 |
