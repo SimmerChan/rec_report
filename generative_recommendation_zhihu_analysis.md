@@ -29,14 +29,14 @@
 ### 1.2 生成式推荐时代（2024-2026）
 
 ```
-Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(2026)
+Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec(快手)/MTGR(2025) → Ultra-HSTU/SSR(2026)
 ```
 
 **三条技术路线**：
 
 | 路线 | 代表工作 | 核心思路 | 激进程度 |
 |------|---------|---------|---------|
-| **端到端生成式** | Meta GR, OneRec, 腾讯OnePiece | 完全替代级联架构, NTP Loss, 自回归生成item序列 | 颠覆式 |
+| **端到端生成式** | Meta GR, OneRec(快手), OnePiece(腾讯) | 完全替代级联架构, NTP Loss, 自回归生成item序列 | 颠覆式 |
 | **Semantic ID生成式** | Google TIGER, 快手OneRec(Semantic版) | RQ-Kmeans量化ID, NTP Loss, 受限解码空间 | 颠覆式 |
 | **Transformer序列建模+判别式CTR** | 字节RankMixer, 美团MTGR, 百度GRAB, 字节TokenMixer-Large | Transformer架构做序列建模, 二分类交叉熵CTR loss, AUC/GAUC评估 | 渐进式 |
 | **LLM增强推荐** | 字节HLLM, 阿里LUM, 京东xLLM | LLM作为特征增强模块嵌入现有系统, 不改变推荐范式 | 稳健式 |
@@ -56,7 +56,7 @@ Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(
 - 机构：Meta（原Facebook）
 - 参数规模：1.5万亿参数
 
-> 注：原报告曾流传"Generative Recommendation: A New Paradigm for Recommendation System"这篇不存在的论文，特此更正。该论文在 arXiv 上并无记录，Meta GR 的真实标题为上方的 Actions Speak Loou Than Words 系列。
+> 注：原报告曾流传"Generative Recommendation: A New Paradigm for Recommendation System"这篇不存在的论文，特此更正。该论文在 arXiv 上并无记录，Meta GR 的真实标题为上方的 Actions Speak Louder than Words 系列。
 
 **核心创新**：
 
@@ -90,19 +90,79 @@ Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec/MTGR(2025) → Ultra-HSTU/SSR(
 
 ---
 
-### 2.2 OneRec — 端到端颠覆式路线
+### 2.2 OneRec — 快手端到端生成式推荐（官方论文）
+
+**论文信息**：
+- 全名：OneRec: Unifying Retrieve and Rank with Generative Recommender and Iterative Preference Alignment
+- arXiv：[2502.18965](https://arxiv.org/abs/2502.18965)
+- 机构：快手
+- 时间：2025年2月
+
+**核心创新**：
+
+#### ① Encoder-Decoder + Sparse MoE
+
+```
+Encoder（用户行为序列）→ Decoder（生成候选item序列）
+MoE（Mixture of Experts）：扩大模型容量而不同比增加计算FLOPs
+```
+
+#### ② Session-wise 生成（区别于逐个预测）
+
+```
+传统 next-item prediction：
+  用户历史 → [逐个预测next-item] → 依赖人工规则拼接结果
+
+Session-wise generation：
+  用户历史 → [整个Session生成] → 直接输出连贯的top-K列表
+  → 列表内item相互感知，上下文更连贯
+```
+
+#### ③ IPA：迭代偏好对齐
+
+```python
+1. 训练奖励模型(RM)预测用户满意度
+2. Beam search生成多个候选session
+3. RM打分选取最优/最差，构建偏好对
+4. DPO(Direct Preference Optimization)优化
+5. 迭代执行，逐步超越历史系统天花板
+```
+
+> 注：推荐系统每次请求只能展示一次结果，无法像NLP领域同时获取正负样本，OneRec通过设计奖励模型模拟生成并定制采样策略来解决该问题。
+
+**线上效果**（快手官方披露）：
+- 部署于快手主场景
+- 停留时长 **+1.6%**（主场景核心指标）
+
+**知乎讨论要点**：
+> 快手OneRec是真正把端到端生成式推荐落地到核心流量的一年工作，在业界有标志性意义。
+
+---
+
+### 2.3 OnePiece — 腾讯算法竞赛作品（非快手官方）
 
 **论文信息**：
 - 全名：OnePiece: The Great Route to Generative Recommendation -- A Case Study from Tencent Algorithm Competition
-- arXiv: [2512.07424](https://arxiv.org/abs/2512.07424)
-- 机构：腾讯算法竞赛团队（非快手官方论文）
-- 时间：2025年12月（原报告误写为2月，特此更正）
+- arXiv：[2512.07424](https://arxiv.org/abs/2512.07424)
+- 机构：腾讯算法竞赛团队
+- 时间：2025年12月
 
-> ⚠️ 注：此论文为腾讯算法竞赛参赛作品，非快手官方发表。快手是否另有 OneRec 官方论文待查，此处以 arXiv 实际记录为准。
+> ⚠️ 注意：OnePiece 与快手 OneRec（arXiv:2502.18965）是两个完全不同的工作，标题相近但机构、作者、内容均不同。原报告曾将两者混淆，特此分立说明。
 
-**三大技术创新**：
+**核心创新**：
 
-#### ① Semantic ID编码（RQ-Kmeans量化）
+#### ① 统一编码器-解码器框架验证Scaling Law
+
+```python
+两类生成式推荐范式在同一框架下验证：
+  (1) ANN-based framework：压缩用户embedding，检索最近邻
+      → 如 Kuaiformer
+  (2) Auto-regressive-based framework：Beam search从全空间解码item
+      → 如 OneRec
+结论：两种范式的loss均严格遵守power-law Scaling Law（R²>0.9）
+```
+
+#### ② Semantic ID编码（RQ-Kmeans量化）
 
 ```
 视频 → [L1, L2, L3] 三层语义Token
@@ -111,40 +171,6 @@ Level 1: [0-511] → 粗粒度语义（搞笑/美食/科技）
 Level 2: [0-511] → 中粒度语义（大类内细分）
 Level 3: [0-511] → 细粒度语义（具体内容区分）
 ```
-
-**优势**：
-- 语义相近的物品Token也相近
-- 解决传统item ID无语义关系的问题
-- 避免RQ-VAE的codebook collapse问题
-
-#### ② Session-wise生成
-
-```
-传统方式：
-  用户历史 → [单独打分] → [分别排序] → top-K
-
-OneRec：
-  用户历史 → [整个Session生成] → [直接输出top-K列表]
-  → 列表内item相互感知，更符合真实场景
-```
-
-#### ③ IPA：迭代偏好对齐
-
-```
-1. 训练奖励模型(RM)预测用户满意度
-2. Beam search生成多个候选session
-3. RM打分选取最优/最差，构建偏好对
-4. DPO(Direct Preference Optimization)优化
-5. 迭代执行，逐步超越历史系统天花板
-```
-
-**线上效果**（快手官方披露）：
-
-| 指标 | 快手App | 快手极速版 |
-|------|---------|-----------|
-| 停留时长 | +0.54% | +1.24% |
-| LT7（7日生命周期） | +0.05% | +0.08% |
-| 核心指标（点赞/关注/评论/广告） | 全部正向 | 全部正向 |
 
 **知乎讨论要点**（马进@腾讯）：
 > "在候选有限的搜索场景，基于semantic的生成式系统的潜力会比较大；在推荐领域，作为一路较强的召回会比较work。"
@@ -231,10 +257,12 @@ OneRec：
 
 ### 2.6 快手One系列全景
 
+> ⚠️ 本节梳理快手官方发布的工作。注意：快手 OneRec（arXiv:2502.18965，2025-02）已在 2.2 节详述，此处补充其他快手工作。
+
 | 时间 | 工作 | 核心贡献 |
 |------|------|---------|
 | 2024.11 | QARM | 多模态对齐，RLHF微调LLM |
-| 2025.02 | OneRec | 端到端生成式推荐奠基 |
+| 2025.02 | OneRec | 端到端生成式推荐奠基（详见2.2节） |
 | 2025.06 | OneRec Technical Report | 工业部署完整方案 |
 | 2025 | INFNet | 信息瓶颈理论的序列建模 |
 
@@ -645,7 +673,8 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 |------|------|------|-----------|---------|
 | Meta GR | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 生成式推荐开山之作,NTP Loss |
 | HSTU | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 与Meta GR为同一篇论文,1.5T参数,Scaling Law |
-| OneRec | 腾讯 | 2025 | [arXiv:2512.07424](https://arxiv.org/abs/2512.07424) | 端到端生成,腾讯竞赛作品 |
+| OneRec | 快手 | 2025 | [arXiv:2502.18965](https://arxiv.org/abs/2502.18965) | 端到端生成,Sparse MoE,IPA对齐 |
+| OnePiece | 腾讯 | 2025 | [arXiv:2512.07424](https://arxiv.org/abs/2512.07424) | Scaling Law验证,统一框架 |
 | Ultra-HSTU | Meta | 2026 | [arXiv:2602.16986](https://arxiv.org/abs/2602.16986) | 稀疏注意力优化 |
 | RankMixer | 字节 | 2025 | [arXiv:2507.15551](https://arxiv.org/abs/2507.15551) | Token-Mixing判别式升级 |
 | MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
