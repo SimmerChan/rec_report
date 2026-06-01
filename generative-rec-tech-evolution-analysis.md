@@ -12,7 +12,6 @@
 ```
 2023年         2024年2月        2025年         2025下半年-2026
   |               |               |                  |
-  |               |               |                  |
 Google          Meta           各厂商密集发布论文        |
 TIGER           GR/HSTU        快手OneRec              业界态度
 (语义ID)        (开创者)       字节RankMixer           从狂热转向
@@ -21,14 +20,14 @@ TIGER           GR/HSTU        快手OneRec              业界态度
                               小红书GenRank
 ```
 
-### 1.2 技术演进三大阶段
+### 1.2 技术演进四大阶段
 
 | 阶段 | 时间 | 核心特征 | 代表工作 |
 |------|------|---------|---------|
 | **探索期** | 2023-2024.2 | 学术研究，语义ID+生成式检索 | Google TIGER |
 | **爆发期** | 2024.2-2025.6 | 工业落地，HSTU统一序列建模，Scaling Law验证 | Meta GR, 快手OneRec |
 | **分歧期** | 2025.6-2026.2 | 技术路线分化，生成式 vs 判别式Scaling | 字节UniMixer, 百度GRAB |
-| **深耕期** | 2026.2-至今 | Ultra-Long SequenceScaling，新架构探索 | ULTRA-HSTU, TokenMixer-Large, UniMixer |
+| **深耕期** | 2026.2-至今 | Ultra-Long Sequence Scaling，新架构探索 | ULTRA-HSTU, TokenMixer-Large, UniMixer |
 
 ---
 
@@ -96,7 +95,7 @@ TIGER           GR/HSTU        快手OneRec              业界态度
 | 字节/抖音 | UG-Separation | 2026.02 | user/item信息流显式拆分, dense模型复用能力 |
 | 字节/抖音 | MERGE | 2026.01 | 动态层次化索引, 流式数据cluster动态生成/重置/合并 |
 
-**技术链解读**: 字节技术链覆盖了推荐系统大模型化的完整环节:
+**字节技术链解读**:
 - **主干扩展**: RankMixer → TokenMixer-Large → UG-Separation
 - **长序列工业化**: STCA (低复杂度高复用) + LEMUR (多模态内生)
 - **统一主干**: OneTrans → MixFormer → MDL (特征/场景/任务统一建模)
@@ -201,7 +200,7 @@ Item内容特征 → [RQ-VAE量化] → Semantic ID序列
 
 ---
 
-### 3.2 快手（激进派）
+### 3.2 快手（激进派→务实派）
 
 **技术路线**: OneRec(生成式) → UniMixer(判别式统一架构)
 
@@ -343,14 +342,23 @@ OneRec      →    OneLoc         →  OneMall         →  GR4AD
 
 ### 3.6 阿里（低调派）
 
-**技术路线**: LUM系列 + 多个GR方向工作
+**技术路线**: LUM系列 + SORT判别式ranking
 
 **特点**:
 - 公开工作较少
 - 侧重用户长序列建模
 - 内部探索多种路线
 
-**核心方向**: 用户建模长序列突破
+**核心创新（SORT）**:
+1. request-centric sample organization — 请求级样本组织
+2. local attention — 局部注意力替代全局attention
+3. query pruning — 查询剪枝降低计算量
+4. generative pre-training — 生成式预训练
+5. 围绕电商ranking系统性改造Transformer
+
+**意义**: SORT验证了判别式ranking backbone在生成式one-model升温背景下**依然存在明确且可观的进化空间**。与RankMixer"更适合推荐的Transformer变体"不同，SORT更接近"经过系统改造后仍可成立的Transformer本体"。
+
+**定位**: 判别式大ranking backbone的重要对照工作
 
 ---
 
@@ -391,23 +399,6 @@ OneRec      →    OneLoc         →  OneMall         →  GR4AD
 
 ---
 
-### 3.11 阿里（判别式另一条路）
-
-**技术路线**: SORT
-
-**核心创新**:
-1. request-centric sample organization — 请求级样本组织
-2. local attention — 局部注意力替代全局attention
-3. query pruning — 查询剪枝降低计算量
-4. generative pre-training — 生成式预训练
-5. 围绕电商ranking系统性改造Transformer
-
-**意义**: SORT验证了判别式ranking backbone在生成式one-model升温背景下**依然存在明确且可观的进化空间**。与RankMixer"更适合推荐的Transformer变体"不同，SORT更接近"经过系统改造后仍可成立的Transformer本体"。
-
-**定位**: 判别式大ranking backbone的重要对照工作
-
----
-
 ### 3.9 Google（学术先驱）
 
 **技术路线**: TIGER → 持续研究
@@ -421,7 +412,7 @@ OneRec      →    OneLoc         →  OneMall         →  GR4AD
 
 ---
 
-### 3.10 小红书/LinkedIn/Meta/京东（特色路线）
+### 3.10 其他厂商特色路线
 
 **小红书 LASER** (arXiv:2602.11562, 2026):
 - 长序列I/O访问与target-aware segmented attention结合
@@ -522,103 +513,7 @@ OneRec      →    OneLoc         →  OneMall         →  GR4AD
 
 ---
 
-## 八、五大行业明确趋势（2025-2026综合观察）
-
-*来源: 知乎文章《从RankMixer到OneRanker》综合分析*
-
-### 趋势一：判别式大ranking并未结束，而是进入成熟阶段
-
-**核心判断**: 判别式ranker并未迅速失去演进空间，RankMixer、TokenMixer-Large、MSN、SORT、Feed-SR、MTFM等表明判别式大ranking依然存在明确且可持续的技术空间。
-
-**真正发生的变化**: 判别式模型正在越来越像foundation model：
-- 更统一的token接口
-- 更深的一体化主干
-- 更明确的scaling目标
-- 更系统的serving优化
-
-**工业竞争力**: 在强实时、高吞吐、严格时延约束的主链路场景中，判别式backbone仍然具备极强的工业竞争力。
-
----
-
-### 趋势二：生成式one-model正在广告、电商与多场景推荐中加速落地
-
-**核心判断**: 生成式推荐已经走过仅在retrieval试水的阶段，开始进入主排序、广告与电商推荐链路。
-
-**标志性工作**: OneRec、MTGR、RankGPT、GPR、OneRanker、GR4AD、OxygenREC、OneMall
-
-**广告领域推进更快的原因**:
-- 广告天然面临多目标优化问题（点击+转化+价值）
-- 页面级生成需求
-- value alignment与全局收益优化
--这些问题与生成式框架的建模方式天然契合
-
----
-
-### 趋势三：semantic token正在从"表示技巧"上升为"系统级接口"
-
-**核心判断**: item不再只是原子化ID，而正在演化为可组合、可迁移、可生成、可索引的token序列。
-
-**被重新表述的传统问题**:
-- 检索不再只依赖ANN索引
-- 排序不再只面对固定item embedding
-- 多场景推荐可共享更高层级的token空间
-- 推理阶段的beam search、trie constraint、prefix constraint将逐渐成为推荐系统的一部分
-
-**战略意义**: semantic token的意义已经远超"更有利于冷启动"这一局部优势，而正在成为推荐系统新的基础接口。
-
----
-
-### 趋势四：serving、复用与inference-time scaling已成为一等公民
-
-**核心判断**: 过去将线上部署放在最后一节作为工程实现说明；当前的情况已经发生变化。
-
-**标志性工作**: UG-Separation、LASER、GR4AD、PROMISE、OxygenREC
-
-**关键洞察**: 训练阶段的模型创新，如果不能转化为在线可控的计算图、存储访问模式与推理策略，就很难构成真正意义上的工业创新。
-
-**新战场**: inference-time scaling不再是通用LLM独有的话题：
-- beam设计
-- path-level reward
-- dynamic beam serving
-- 用户侧复用
-- 近线reasoning distillation
-
----
-
-### 趋势五：统一化正在从"统一特征"走向"统一分布、统一目标、统一平台"
-
-**核心判断**: 当前更激进的目标已经变成：
-- 统一特征类型
-- 统一场景分布
-- 统一任务目标
-- 统一训练与部署接口
-- 统一推荐、搜索、广告之间的基础表达
-
-**标志性工作**: OneTrans、MixFormer、MDL、MTFM、OneMall、OxygenREC
-
-**推荐系统特有的foundation model逻辑**: tokenization、long context、multi-distribution、value alignment、serving co-design、one-model deployment
-
----
-
-## 九、下阶段分水岭：三层"统一接口"
-
-**核心判断**: 未来一到两年，真正拉开差距的因素大概率不会只是参数规模本身，而会是三类"统一接口"谁先成形。
-
-### 第一层：统一的token接口
-item、广告、内容、地理、场景、任务等对象，是否能够被映射到更稳定、更可扩展的语义空间中。
-
-### 第二层：统一的backbone接口
-无论是判别式统一backbone还是生成式one-model，核心竞争都在于：究竟由谁来承接sequence、feature、scenario、task与value这些异质信息。
-
-### 第三层：统一的在线推理接口
-训练、蒸馏、缓存、复用、beam search、近线reasoning之间能否形成闭环，将决定"论文中的大模型"能否转化为"线上可持续迭代的平台能力"。
-
-### 核心结论
-**推荐系统的大模型化，已经从"模型更大"演进到"接口重写"**。
-
----
-
-## 六、技术争议与关键问题
+## 五、核心挑战与关键问题
 
 ### 5.1 核心争议: 生成式 vs 判别式
 
@@ -772,6 +667,102 @@ Meta GR/HSTU (2024.2) ← (参考)
    - 2024-2025.6: 狂热Follow
    - 2025.7-: 理性观望
    - 关注真实业务指标而非论文数字
+
+---
+
+## 八、五大行业明确趋势（2025-2026综合观察）
+
+*来源: 知乎文章《从RankMixer到OneRanker》综合分析*
+
+### 趋势一：判别式大ranking并未结束，而是进入成熟阶段
+
+**核心判断**: 判别式ranker并未迅速失去演进空间，RankMixer、TokenMixer-Large、MSN、SORT、Feed-SR、MTFM等表明判别式大ranking依然存在明确且可持续的技术空间。
+
+**真正发生的变化**: 判别式模型正在越来越像foundation model：
+- 更统一的token接口
+- 更深的一体化主干
+- 更明确的scaling目标
+- 更系统的serving优化
+
+**工业竞争力**: 在强实时、高吞吐、严格时延约束的主链路场景中，判别式backbone仍然具备极强的工业竞争力。
+
+---
+
+### 趋势二：生成式one-model正在广告、电商与多场景推荐中加速落地
+
+**核心判断**: 生成式推荐已经走过仅在retrieval试水的阶段，开始进入主排序、广告与电商推荐链路。
+
+**标志性工作**: OneRec、MTGR、RankGPT、GPR、OneRanker、GR4AD、OxygenREC、OneMall
+
+**广告领域推进更快的原因**:
+- 广告天然面临多目标优化问题（点击+转化+价值）
+- 页面级生成需求
+- value alignment与全局收益优化
+- 这些问题与生成式框架的建模方式天然契合
+
+---
+
+### 趋势三：semantic token正在从"表示技巧"上升为"系统级接口"
+
+**核心判断**: item不再只是原子化ID，而正在演化为可组合、可迁移、可生成、可索引的token序列。
+
+**被重新表述的传统问题**:
+- 检索不再只依赖ANN索引
+- 排序不再只面对固定item embedding
+- 多场景推荐可共享更高层级的token空间
+- 推理阶段的beam search、trie constraint、prefix constraint将逐渐成为推荐系统的一部分
+
+**战略意义**: semantic token的意义已经远超"更有利于冷启动"这一局部优势，而正在成为推荐系统新的基础接口。
+
+---
+
+### 趋势四：serving、复用与inference-time scaling已成为一等公民
+
+**核心判断**: 过去将线上部署放在最后一节作为工程实现说明；当前的情况已经发生变化。
+
+**标志性工作**: UG-Separation、LASER、GR4AD、PROMISE、OxygenREC
+
+**关键洞察**: 训练阶段的模型创新，如果不能转化为在线可控的计算图、存储访问模式与推理策略，就很难构成真正意义上的工业创新。
+
+**新战场**: inference-time scaling不再是通用LLM独有的话题：
+- beam设计
+- path-level reward
+- dynamic beam serving
+- 用户侧复用
+- 近线reasoning distillation
+
+---
+
+### 趋势五：统一化正在从"统一特征"走向"统一分布、统一目标、统一平台"
+
+**核心判断**: 当前更激进的目标已经变成：
+- 统一特征类型
+- 统一场景分布
+- 统一任务目标
+- 统一训练与部署接口
+- 统一推荐、搜索、广告之间的基础表达
+
+**标志性工作**: OneTrans、MixFormer、MDL、MTFM、OneMall、OxygenREC
+
+**推荐系统特有的foundation model逻辑**: tokenization、long context、multi-distribution、value alignment、serving co-design、one-model deployment
+
+---
+
+## 九、下阶段分水岭：三层"统一接口"
+
+**核心判断**: 未来一到两年，真正拉开差距的因素大概率不会只是参数规模本身，而会是三类"统一接口"谁先成形。
+
+### 第一层：统一的token接口
+item、广告、内容、地理、场景、任务等对象，是否能够被映射到更稳定、更可扩展的语义空间中。
+
+### 第二层：统一的backbone接口
+无论是判别式统一backbone还是生成式one-model，核心竞争都在于：究竟由谁来承接sequence、feature、scenario、task与value这些异质信息。
+
+### 第三层：统一的在线推理接口
+训练、蒸馏、缓存、复用、beam search、近线reasoning之间能否形成闭环，将决定"论文中的大模型"能否转化为"线上可持续迭代的平台能力"。
+
+### 核心结论
+**推荐系统的大模型化，已经从"模型更大"演进到"接口重写"**。
 
 ---
 
