@@ -418,33 +418,8 @@ RQ-Kmeans强制每个cluster包含等量item，彻底解决此问题。
 
 <div>
 <h4 style="color:#34d399; margin:0 0 16px 0; font-size:1.1em;">线上效果</h4>
-<table style="width:100%; font-size:0.95em; border-collapse:collapse;">
-<tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
-<th style="text-align:left; color:#64748b; font-weight:600; padding:10px 0;">指标</th>
-<th style="text-align:center; color:#64748b; font-weight:600; padding:10px;">快手App</th>
-<th style="text-align:center; color:#64748b; font-weight:600; padding:10px;">快手极速版</th>
-</tr>
-<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-<td style="color:#94a3b8; padding:12px 0;">停留时长</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">+0.54%</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">+1.24%</td>
-</tr>
-<tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-<td style="color:#94a3b8; padding:12px 0;">LT7（7日生命周期）</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">+0.05%</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">+0.08%</td>
-</tr>
-<tr>
-<td style="color:#94a3b8; padding:12px 0;">核心指标</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">全部正向</td>
-<td style="text-align:center; color:#34d399; font-weight:700; padding:12px;">全部正向</td>
-</tr>
-</table>
-
-<div style="margin-top:16px; padding:14px; background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.2); border-radius:8px;">
-<div style="font-size:0.85em; color:#64748b;">在快手体系里，1.24%的停留时长提升具有统计显著性，相当于每天多留住用户好几分钟。</div>
-</div>
-</div>
+<p style="color:#34d399; font-size:1.5em; font-weight:700;">+1.6% 停留时长</p>
+<p style="color:#64748b; font-size:0.85em; margin-top:8px;">快手主场景全量上线（论文原文唯一披露数字）</p>
 
 </div>
 
@@ -456,7 +431,7 @@ RQ-Kmeans强制每个cluster包含等量item，彻底解决此问题。
 
 | 公司 | 技术路线 | 激进程度 | 代表收益 |
 |------|---------|---------|---------|
-| **快手** | 端到端生成式 | <span style="background:rgba(248,113,113,0.15); color:#f87171; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85em;">颠覆式</span> | 停留时长+1.24% |
+| **快手** | 端到端生成式 | <span style="background:rgba(248,113,113,0.15); color:#f87171; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85em;">颠覆式</span> | 停留时长+1.6% |
 | **字节** | Token-Mixing判别式升级 | <span style="background:rgba(251,191,36,0.15); color:#fbbf24; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85em;">渐进式</span> | 精排升级，GPU利用率↑ |
 | **京东** | 混合架构 | <span style="background:rgba(34,211,238,0.15); color:#22d3ee; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85em;">稳健式</span> | 推理优化，工程化 |
 | **阿里** | 学术深耕 | <span style="background:rgba(167,139,250,0.15); color:#a78bfa; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85em;">研究式</span> | 显式稀疏性理论突破 |

@@ -43,7 +43,7 @@
 
 **LLM带来了破局契机。** 四个关键突破同时到来：一是Scaling Law，模型规模扩大可预测提升效果；二是长序列建模能力，自注意力天然适合处理用户行为序列；三是世界知识注入，预训练语料蕴含跨领域多模态知识；四是RL对齐，链式推理能力涌现。
 
-标志性事件是2024年Meta GR论文首次提出生成式推荐范式，Facebook主APP实现CTR加12.4%；2025年快手OneRec全量上线，停留时长提升1.24%，核心指标100%正向。
+标志性事件是2024年Meta GR论文首次提出生成式推荐范式，Facebook主APP实现CTR加12.4%；2025年快手OneRec全量上线，停留时长提升1.6%，核心指标100%正向。
 
 ---
 
@@ -99,7 +99,7 @@
 
 Meta GR是生成式开山之作，1.5万亿参数，CTR提升12.4%，NDCG提升65.8%，首次验证工业推荐系统Scaling Law。
 
-快手OneRec是端到端颠覆路线，RQ-Kmeans加Session-wise加IPA对齐，极速版停留时长提升1.24%，核心指标100%正向。OneRec-V2用Lazy Decoder，MFU达62%，计算量下降94%。
+快手OneRec是端到端颠覆路线，RQ-Kmeans加Session-wise加IPA对齐，停留时长提升1.6%，核心指标100%正向。OneRec-V2用Lazy Decoder，MFU达62%，计算量下降94%。
 
 Meta Ultra-HSTU是稀疏注意力极致优化，2026年2月发布，半局部注意力SLA加动态拓扑，生产环境消费提升4%、互动提升8%。
 
@@ -125,7 +125,7 @@ Meta Ultra-HSTU是稀疏注意力极致优化，2026年2月发布，半局部注
 
 **阿里是判别式另一条路，** SSR突破隐式稀疏天花板，SORT系统性改造Transformer。
 
-**核心数据要记住。** Meta GR CTR加12.4%，快手OneRec停留时长加1.24%，字节TokenMixer-Large订单加1.66%、广告加2.0%，美团MTGR FLOPs加65倍，百度GRAB CTR加3.49%、收入加3.05%。
+**核心数据要记住。** Meta GR CTR加12.4%，快手OneRec停留时长加1.6%，字节TokenMixer-Large订单加1.66%、广告加2.0%，美团MTGR FLOPs加65倍，百度GRAB CTR加3.49%、收入加3.05%。
 
 ---
 

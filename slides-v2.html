@@ -762,7 +762,7 @@ graph LR
           </div>
         </div>
         <div style="margin-top:6px; font-size:clamp(0.75em,0.88vw,0.95em); color:var(--text-secondary); line-height:1.5;">
-          <strong>Meta GR：</strong>从"级联选择"到"端到端生成"，打断误差传播链，CTR+12.4% &nbsp;|&nbsp; <strong>OneRec：</strong>单一LLM替代整个级联架构，从根本消除误差逐级放大，停留时长+1.24%
+          <strong>Meta GR：</strong>从"级联选择"到"端到端生成"，打断误差传播链，CTR+12.4% &nbsp;|&nbsp; <strong>OneRec：</strong>单一LLM替代整个级联架构，从根本消除误差逐级放大，停留时长+1.6%
         </div>
         <div style="margin-top:4px; font-size:clamp(0.72em,0.85vw,0.9em); color:var(--text-secondary);">
           <span style="color:var(--red);">●</span> 级联：每层EMB Lookup+MLP逐级筛选 <span style="margin:0 4px;">|</span> <span style="color:var(--green);">●</span> 生成式：Self-Attention全局建模，无逐级筛选
@@ -773,7 +773,7 @@ graph LR
       <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
         <div class="card" style="padding:8px 10px;">
           <div style="font-size:clamp(0.82em,0.95vw,1.05em); font-weight:700; color:var(--green); margin-bottom:3px;">长尾内容曝光问题</div>
-          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">级联架构中，Top-K截断导致长尾内容永远没有曝光机会。Meta GR（在线A/B）：CTR+12.4%，快手OneRec：停留时长+1.24%，核心指标全部正向</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">级联架构中，Top-K截断导致长尾内容永远没有曝光机会。Meta GR（在线A/B）：CTR+12.4%，快手OneRec：停留时长+1.6%，核心指标全部正向</div>
         </div>
       </div>
     </div>
@@ -995,7 +995,7 @@ graph LR
   </div>
 
   <div class="highlight-box" style="margin-top:12px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">标志性事件：</strong>2024年Meta GR论文（arXiv:2402.01115）首次提出生成式推荐范式，Facebook主APP实现CTR+12.4%。2025年快手OneRec全量上线，停留时长+1.24%（极速版+1.24%，App+0.54%，核心指标100%正向）。</p>
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">标志性事件：</strong>2024年Meta GR论文（arXiv:2402.01115）首次提出生成式推荐范式，Facebook主APP实现CTR+12.4%。2025年快手OneRec全量上线，停留时长+1.6%（核心指标100%正向）。</p>
     <p style="font-size:clamp(0.82em,0.95vw,1.0em); margin-top:6px; color:var(--text-muted);">工程效率标杆：淘宝NEZHA延迟30ms内 · 京东50ms · 阿里RecGPT CTR+5% · 小红书SAGE突破信息茧房</p>
   </div>
 </div>
@@ -1619,12 +1619,8 @@ Beam Search生成候选 → RM打分 → 偏好对构建
       </div>
       <div class="stat-row" style="margin-top:10px; justify-content:flex-start; gap:12px;">
         <div class="stat-box">
-          <div class="stat-num" style="color:var(--green);">+1.24%</div>
-          <div class="stat-label">停留时长(极速版)</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--cyan);">+0.54%</div>
-          <div class="stat-label">停留时长(App)</div>
+          <div class="stat-num" style="color:var(--green);">+1.6%</div>
+          <div class="stat-label">停留时长</div>
         </div>
         <div class="stat-box">
           <div class="stat-num" style="color:var(--purple);">100%</div>
@@ -2074,7 +2070,7 @@ graph TD
     <div class="model-card">
       <div class="model-name">OneRec <span class="badge badge-new">2025.2</span></div>
       <div class="model-org">快手</div>
-      <div class="model-contrib">端到端生成式推荐，RQ-Kmeans + Session-wise + IPA对齐。<strong style="color:var(--green);">停留时长+1.24%</strong>，核心指标100%正向。</div>
+      <div class="model-contrib">端到端生成式推荐，RQ-Kmeans + Session-wise + IPA对齐。<strong style="color:var(--green);">停留时长+1.6%</strong>，核心指标100%正向。</div>
     </div>
     <div class="model-card">
       <div class="model-name">OneRec-V2 <span class="badge badge-new">2025.8</span></div>
