@@ -1,0 +1,2664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>推荐算法演进与生成式推荐 - 技术调研报告</title>
+<script src="mermaid.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --cyan: #22d3ee;
+  --purple: #a78bfa;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --border: rgba(255,255,255,0.08);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+}
+.presentation { width: 100vw; height: 100vh; position: relative; }
+.slide {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; padding: clamp(32px, 4vw, 100px) clamp(48px, 6vw, 140px);
+  background: linear-gradient(145deg, #020617 0%, #0f172a 40%, #0c1425 100%);
+  overflow-y: auto;
+}
+.slide.active { display: flex; flex-direction: column; }
+.slide.active::-webkit-scrollbar { width: 6px; }
+.slide.active::-webkit-scrollbar-track { background: transparent; }
+.slide.active::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* Typography — scales with viewport (2560px baseline) */
+h1 { font-size: clamp(1.8em, 2.8vw, 4.5em); font-weight: 800; background: linear-gradient(135deg, #f1f5f9, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+h2 { font-size: clamp(1.4em, 2.2vw, 3.2em); font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-left: 5px solid var(--cyan); padding-left: 18px; }
+h3 { font-size: clamp(1.1em, 1.6vw, 2.2em); font-weight: 600; color: var(--cyan); margin-bottom: 12px; }
+h4 { font-size: clamp(0.95em, 1.2vw, 1.8em); font-weight: 600; color: var(--purple); margin-bottom: 8px; }
+p, li { font-size: clamp(0.9em, 1.05vw, 1.4em); line-height: 1.75; color: var(--text-secondary); }
+li { margin-bottom: 8px; }
+ul { padding-left: 1.5em; }
+strong { color: var(--text-primary); font-weight: 600; }
+.section-label { font-size: clamp(0.8em, 0.95vw, 1.3em); }
+.c { color: var(--cyan); }
+.p { color: var(--purple); }
+.g { color: var(--green); }
+.a { color: var(--amber); }
+.r { color: var(--red); }
+
+/* Tags */
+.tag {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  font-size: clamp(0.85em, 1.1vw, 1.15em); font-weight: 600; margin-right: 8px; white-space: nowrap;
+}
+.tag-c { background: rgba(34,211,238,0.12); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+.tag-v { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+.tag-g { background: rgba(52,211,153,0.12); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+.tag-a { background: rgba(251,191,36,0.12); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+.tag-r { background: rgba(248,113,113,0.12); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+.tag-y { background: rgba(251,191,36,0.12); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+.tag-b { background: rgba(99,102,241,0.12); color: var(--indigo); border: 1px solid rgba(99,102,241,0.3); }
+.tag-k { background: rgba(34,211,238,0.12); color: var(--cyan); border: 1px solid rgba(34,211,238,0.3); }
+.tag-p { background: rgba(236,72,153,0.12); color: var(--pink); border: 1px solid rgba(236,72,153,0.3); }
+
+/* Grid layouts */
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Cards */
+.card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px 20px;
+}
+.card-c { border-left: 3px solid var(--cyan); }
+.card-v { border-left: 3px solid var(--purple); }
+.card-g { border-left: 3px solid var(--green); }
+.card-a { border-left: 3px solid var(--amber); }
+.card-r { border-left: 3px solid var(--red); }
+
+/* Section label */
+.section-label {
+  font-size: 0.8em; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 3px; margin-bottom: 8px;
+}
+
+/* Mermaid diagrams */
+.mermaid-container {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+  margin: 12px 0;
+  overflow: auto;
+  max-width: 100%;
+  max-height: 100%;
+  position: relative;
+  left: 0;
+}
+/* .mermaid gets width from .mermaid-container */
+.mermaid { width: 100%; }
+/* SVG text - removed inline font-size conflict, handled by CSS below */
+/* Mermaid node styles */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon,
+.mermaid .node path {
+  stroke-width: 1.5px !important;
+}
+/* Node label - proper sizing, use clamp for responsive sizing */
+.mermaid .nodeLabel {
+  font-size: clamp(10px, 0.9vw, 13px) !important;
+  padding: 6px 12px !important;
+  white-space: nowrap !important;
+  line-height: 1.3 !important;
+  text-align: center !important;
+  overflow: visible !important;
+}
+/* foreignObject - ensure proper dimensions for text wrapping */
+.mermaid .node foreignObject {
+  width: auto !important;
+  height: auto !important;
+  min-width: 120px !important;
+  min-height: 45px !important;
+  overflow: visible !important;
+}
+/* Edge labels - smaller than node labels */
+.mermaid .edgeLabel {
+  font-size: clamp(10px, 0.85vw, 14px) !important;
+  padding: 2px 6px !important;
+  background-color: rgba(15,23,42,0.8) !important;
+}
+
+/* Code blocks */
+.code-block {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(34,211,238,0.15);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: clamp(0.85em, 1vw, 1.2em);
+  color: var(--cyan);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: clamp(0.85em, 1vw, 1.2em); }
+th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-weight: 600; font-size: clamp(0.75em, 0.9vw, 1.1em); text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.2); }
+td { color: var(--text-secondary); }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Progress bar */
+.progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--cyan), var(--purple)); z-index: 200; transition: width 0.3s; }
+
+/* Navigation */
+.nav {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; z-index: 100;
+  background: rgba(15,23,42,0.95);
+  padding: 10px 20px;
+  border-radius: 40px;
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+}
+.nav button {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text-secondary);
+  padding: 8px 18px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: clamp(0.8em, 0.95vw, 1.1em);
+  transition: all 0.2s;
+}
+.nav button:hover { background: rgba(34,211,238,0.15); border-color: var(--cyan); color: var(--cyan); }
+.nav button.active { background: var(--cyan); color: #020617; border-color: var(--cyan); font-weight: 600; }
+.nav .divider { width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
+
+/* Cover specific */
+.cover-title { font-size: clamp(2.2em, 3.5vw, 5em); font-weight: 800; margin-bottom: 8px; }
+.cover-subtitle { font-size: clamp(1.1em, 1.8vw, 2.4em); color: var(--text-secondary); margin-bottom: 32px; }
+.cover-meta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.meta-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 12px 24px;
+  text-align: center;
+}
+.meta-chip .label { font-size: clamp(0.7em, 0.85vw, 1em); color: var(--text-muted); margin-bottom: 3px; }
+.meta-chip .value { font-size: clamp(0.88em, 1.05vw, 1.3em); color: var(--text-secondary); font-weight: 600; }
+.highlight-box {
+  background: rgba(34,211,238,0.06);
+  border: 1px solid rgba(34,211,238,0.2);
+  border-radius: 10px; padding: 16px 20px; margin: 12px 0;
+}
+.highlight-box-v { background: rgba(167,139,250,0.06); border-color: rgba(167,139,250,0.2); }
+.highlight-box-g { background: rgba(52,211,153,0.06); border-color: rgba(52,211,153,0.2); }
+.highlight-box-a { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.2); }
+.highlight-box-r { background: rgba(248,113,113,0.06); border-color: rgba(248,113,113,0.2); }
+
+/* Architecture diagram container */
+.arch-diagram {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 20px; margin: 10px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.arch-row { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.arch-box {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 12px 18px;
+  font-size: clamp(0.8em, 0.95vw, 1.1em); text-align: center; min-width: 110px;
+}
+.arch-box.cyan { border-color: rgba(34,211,238,0.4); background: rgba(34,211,238,0.06); color: var(--cyan); }
+.arch-box.purple { border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.06); color: var(--purple); }
+.arch-box.green { border-color: rgba(52,211,153,0.4); background: rgba(52,211,153,0.06); color: var(--green); }
+.arch-box.amber { border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.06); color: var(--amber); }
+.arch-box.red { border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.06); color: var(--red); }
+.arch-arrow { color: var(--text-muted); font-size: 1.2em; }
+
+/* TOC */
+.toc-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px; transition: all 0.2s; }
+.toc-item:hover { background: rgba(34,211,238,0.05); border-color: rgba(34,211,238,0.2); }
+.toc-num { font-size: clamp(1em, 1.3vw, 1.6em); font-weight: 800; color: var(--cyan); min-width: 36px; }
+.toc-title { font-size: clamp(0.88em, 1.05vw, 1.3em); color: var(--text-secondary); }
+.toc-pages { margin-left: auto; font-size: clamp(0.72em, 0.85vw, 1em); color: var(--text-muted); }
+
+/* Model card */
+.model-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+}
+.model-card .model-name { font-size: clamp(0.95em, 1.1vw, 1.4em); font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+.model-card .model-org { font-size: clamp(0.72em, 0.85vw, 1em); color: var(--text-muted); margin-bottom: 10px; }
+.model-card .model-contrib { font-size: clamp(0.8em, 0.95vw, 1.15em); color: var(--text-secondary); line-height: 1.6; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-item { display: flex; gap: 16px; align-items: flex-start; }
+.timeline-date { font-size: clamp(0.75em, 0.9vw, 1.1em); color: var(--cyan); font-weight: 600; min-width: 70px; padding-top: 2px; }
+.timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--cyan); margin-top: 4px; flex-shrink: 0; position: relative; }
+.timeline-dot::after { content: ''; position: absolute; top: 16px; left: 5px; width: 2px; height: 32px; background: rgba(34,211,238,0.2); }
+.timeline-item:last-child .timeline-dot::after { display: none; }
+.timeline-content { font-size: clamp(0.82em, 0.95vw, 1.15em); color: var(--text-secondary); padding-bottom: 16px; }
+
+/* Comparison */
+.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.compare-item { padding: 14px 16px; border-radius: 8px; }
+.compare-item.good { background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.2); }
+.compare-item.bad { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2); }
+.compare-item .label { font-size: clamp(0.72em, 0.85vw, 1em); font-weight: 600; margin-bottom: 6px; }
+.compare-item.good .label { color: var(--green); }
+.compare-item.bad .label { color: var(--red); }
+
+/* Stats */
+.stat-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.stat-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 16px 24px; text-align: center; min-width: 110px; }
+.stat-box .stat-num { font-size: clamp(1.4em, 2vw, 2.4em); font-weight: 800; color: var(--cyan); }
+.stat-box .stat-unit { font-size: clamp(0.7em, 0.85vw, 1em); color: var(--text-muted); }
+.stat-box .stat-label { font-size: clamp(0.72em, 0.85vw, 1em); color: var(--text-secondary); margin-top: 2px; }
+
+/* Badge */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 6px; font-size: clamp(0.68em, 0.85vw, 1em); font-weight: 600; }
+.badge-new { background: rgba(52,211,153,0.15); color: var(--green); }
+.badge-upd { background: rgba(251,191,36,0.15); color: var(--amber); }
+.badge-sec { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+/* Paper ref */
+.paper-ref { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 14px 18px; margin: 8px 0; }
+.paper-ref .title { font-size: clamp(0.88em, 1.05vw, 1.25em); font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.paper-ref .meta { font-size: clamp(0.72em, 0.85vw, 1em); color: var(--text-muted); }
+.paper-ref .abstract { font-size: clamp(0.78em, 0.9vw, 1.1em); color: var(--text-secondary); margin-top: 8px; line-height: 1.6; }
+
+/* Two-col text */
+.two-col { columns: 2; column-gap: 24px; }
+.two-col p { break-inside: avoid; margin-bottom: 10px; }
+
+/* Bullet with icon */
+.bullet-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.bullet-icon { color: var(--cyan); font-size: clamp(0.88em, 1.05vw, 1.2em); margin-top: 2px; flex-shrink: 0; }
+
+/* Flow step */
+.flow-step { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: rgba(34,211,238,0.15); color: var(--cyan); font-size: clamp(0.72em, 0.85vw, 1em); font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-text { font-size: clamp(0.82em, 0.95vw, 1.15em); color: var(--text-secondary); }
+
+/* Mermaid dark theme override */
+.mermaid .gradient { fill: var(--cyan); }
+.mermaid text { fill: #e2e8f0 !important; }
+.mermaid .node rect, .mermaid .node circle, .mermaid .node ellipse, .mermaid .node polygon { fill: rgba(30,41,59,0.8) !important; stroke: rgba(34,211,238,0.3) !important; }
+.mermaid .edgePath .path { stroke: rgba(148,163,184,0.4) !important; }
+.mermaid .edgeLabel { background-color: rgba(15,23,42,0.8) !important; color: var(--text-secondary) !important; }
+.mermaid svg text, .mermaid .nodeLabel, .mermaid g.nodeLabel text {
+  font-size: 9px !important;
+  fill: #e2e8f0 !important;
+  font-family: inherit !important;
+  white-space: nowrap !important;
+}
+.mermaid .edgeLabel { font-size: 9px !important; color: #e2e8f0 !important; }
+.mermaid .node foreignObject { overflow: visible !important; width: auto !important; height: auto !important; }
+.mermaid .edgeLabel foreignObject { overflow: visible !important; width: auto !important; height: auto !important; }
+.mermaid svg { max-width: 100% !important; width: 100% !important; height: auto !important; display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="presentation" id="presentation">
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 0: 封面 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide active" id="slide-0">
+  <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+    <div class="section-label" style="margin-bottom:16px;">昇腾推荐团队 · 技术调研</div>
+    <h1 class="cover-title">推荐算法演进与生成式推荐</h1>
+    <div class="cover-subtitle">Generative Recommendation: The Paradigm Shift</div>
+    <div class="cover-meta" style="margin-top:24px;">
+      <div class="meta-chip"><div class="label">受众</div><div class="value">昇腾推荐团队</div></div>
+      <div class="meta-chip"><div class="label">日期</div><div class="value">2026年5月</div></div>
+      <div class="meta-chip"><div class="label">页数</div><div class="value">29页</div></div>
+    </div>
+    <div class="highlight-box" style="margin-top:32px; max-width:720px;">
+      <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统正处于算法 Scaling Law 驱动的新一轮进化周期 — 从协同过滤到语义向量，从判别式到生成式与判别式并行</p>
+    </div>
+    <div style="margin-top:16px; font-size:clamp(0.78em, 0.95vw, 1.1em); color:var(--text-muted);">核心议题：Scaling Law · 算法演进 · 大厂路线 · 工业落地 · 昇腾行动建议</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 1: 目录 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-1">
+  <div class="section-label">Agenda</div>
+  <h2>汇报内容</h2>
+  <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">01</div>
+      <div>
+        <div class="toc-title">推荐系统为什么正在经历 Scaling Law 驱动的新进化</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">三大瓶颈 · GPU利用率 · LLM破局</div>
+      </div>
+      <div class="toc-pages">P3-5</div>
+    </div>
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">02</div>
+      <div>
+        <div class="toc-title">推荐算法演进全景图</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">三条主线 · 算法分类 · 关键技术节点</div>
+      </div>
+      <div class="toc-pages">P6-9</div>
+    </div>
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">03</div>
+      <div>
+        <div class="toc-title">生成式推荐核心技术解析</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">Semantic ID · 超长序列 · 代表工作</div>
+      </div>
+      <div class="toc-pages">P10-16</div>
+    </div>
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">04</div>
+      <div>
+        <div class="toc-title">大厂技术路线对比 2025-2026</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">快手 · 字节 · 京东 · 阿里 · Meta</div>
+      </div>
+      <div class="toc-pages">P17-20</div>
+    </div>
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">05</div>
+      <div>
+        <div class="toc-title">工业落地挑战与共识</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">知乎讨论精华 · 工业分级 · 业界共识</div>
+      </div>
+      <div class="toc-pages">P21-24</div>
+    </div>
+    <div class="toc-item" style="max-width:680px; width:100%;">
+      <div class="toc-num">06</div>
+      <div>
+        <div class="toc-title">昇腾推荐团队行动建议</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">迁移支撑 · 原生开发 · 生态跟进</div>
+      </div>
+      <div class="toc-pages">P25-28</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 2: Part 1 开场 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-2">
+  <div class="section-label">Part 01 · 范式转变</div>
+  <h2>推荐系统为什么正在经历范式转变</h2>
+
+  <!-- 顶部：三大痛点（与markdown 1.1三大核心痛点完全对齐） -->
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:14px;">
+    <div class="card card-r">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="font-size:1.8em;">📉</div>
+        <div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--red); font-weight:700;">PAIN 01</div>
+          <h4 style="margin:1px 0 0;">优化边际效益递减</h4>
+        </div>
+      </div>
+      <p style="font-size:0.82em; line-height:1.5; margin-bottom:6px;">演进路径：DIN → MIMN → SIM → ... 模型越复杂，效果提升越小</p>
+      <ul style="font-size:clamp(0.82em,0.95vw,1.05em); line-height:1.6; color:var(--text-secondary); padding-left:14px; margin:0;">
+        <li>特征工程"矿山"枯竭：统计特征、交叉特征基本挖掘殆尽</li>
+        <li>模型工程天花板：无法建模"世界知识"和"意图Reasoning"</li>
+        <li>优化目标割裂：召回/粗排/精排各自为战</li>
+      </ul>
+    </div>
+
+    <div class="card card-a">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="font-size:1.8em;">🔗</div>
+        <div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--amber); font-weight:700;">PAIN 02</div>
+          <h4 style="margin:1px 0 0;">级联架构误差传播</h4>
+        </div>
+      </div>
+      <p style="font-size:0.82em; line-height:1.5; margin-bottom:6px;">候选池(亿级) → 召回(万级) → 粗排(千级) → 精排(百级) → 重排(十级)</p>
+      <ul style="font-size:clamp(0.82em,0.95vw,1.05em); line-height:1.6; color:var(--text-secondary); padding-left:14px; margin:0;">
+        <li>各模块通信和缓存代价超过50%的资源消耗</li>
+        <li>误差逐级放大：召回漏掉的item，精排再强也无法挽回</li>
+        <li>系统维护成本持续上升，优化目标分散到不同团队</li>
+      </ul>
+    </div>
+
+    <div class="card card-v">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="font-size:1.8em;">⚡</div>
+        <div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--violet); font-weight:700;">PAIN 03</div>
+          <h4 style="margin:1px 0 0;">GPU资源严重浪费</h4>
+        </div>
+      </div>
+      <p style="font-size:0.82em; line-height:1.5; margin-bottom:6px;">传统CTR继承自CPU时代，大量算子是memory-bound Embedding Lookup</p>
+      <ul style="font-size:clamp(0.82em,0.95vw,1.05em); line-height:1.6; color:var(--text-secondary); padding-left:14px; margin:0;">
+        <li>H100实际MFU仅~5%（Kunlun论文：17%→37%；OneRec-V2 Lazy Decoder：62%）</li>
+        <li>TensorCore大量闲置，价值百万的GPU饿着</li>
+        <li>架构不改，堆卡解决不了问题（OneRec-V2用Lazy Decoder实现算力解放）</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 底部：LLM破局 + MFU柱状图 -->
+  <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;">
+    <!-- 左下：LLM破局 + 为什么是现在 -->
+    <div style="background:rgba(0,0,0,0.2); border:1px solid rgba(6,182,212,0.3); border-radius:10px; padding:12px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="font-size:1.6em;">⚡</div>
+        <div>
+          <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--cyan); font-weight:700;">LLM破局</div>
+          <h4 style="margin:1px 0 0; color:var(--cyan); font-size:1em;">三重突破同时到来</h4>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:5px; margin-bottom:10px;">
+        <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.82em,0.95vw,1.05em);">
+          <div style="background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.25); border-radius:5px; padding:2px 7px; font-size:clamp(0.78em,0.9vw,0.95em); font-weight:700; color:var(--cyan); white-space:nowrap; flex-shrink:0;">Scaling Law</div>
+          <span style="color:var(--text-secondary);">模型规模扩大可预测提升效果，打破DLRM天花板</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.82em,0.95vw,1.05em);">
+          <div style="background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.25); border-radius:5px; padding:2px 7px; font-size:clamp(0.78em,0.9vw,0.95em); font-weight:700; color:var(--cyan); white-space:nowrap; flex-shrink:0;">长序列建模</div>
+          <span style="color:var(--text-secondary);">自注意力机制天然适合处理用户行为序列</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.82em,0.95vw,1.05em);">
+          <div style="background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.25); border-radius:5px; padding:2px 7px; font-size:clamp(0.78em,0.9vw,0.95em); font-weight:700; color:var(--cyan); white-space:nowrap; flex-shrink:0;">世界知识</div>
+          <span style="color:var(--text-secondary);">预训练语料蕴含跨领域多模态知识，破解冷启动</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.82em,0.95vw,1.05em);">
+          <div style="background:rgba(6,182,212,0.12); border:1px solid rgba(6,182,212,0.25); border-radius:5px; padding:2px 7px; font-size:clamp(0.78em,0.9vw,0.95em); font-weight:700; color:var(--cyan); white-space:nowrap; flex-shrink:0;">RL对齐</div>
+          <span style="color:var(--text-secondary);">链式推理能力涌现，重构推荐系统的"推理逻辑"</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:8px; margin-top:2px;">
+        <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--amber); font-weight:700; margin-bottom:5px;">为什么是现在？</div>
+        <div style="display:flex; flex-direction:column; gap:3px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);"><span style="color:var(--green);">①</span> LLM生态成熟（训练+推理框架均已工业级）</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);"><span style="color:var(--green);">②</span> 工业效果验证（Meta GR、快手OneRec论文已发表）</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);"><span style="color:var(--green);">③</span> 业务倒逼升级（GPU利用率低但购置成本高）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右下：GPU MFU 利用率对比 -->
+    <div style="background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:10px; padding:12px;">
+      <div style="font-size:clamp(0.82em,0.95vw,1.05em); font-weight:700; margin-bottom:8px; color:var(--text-muted);">GPU MFU 利用率对比</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--red); width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">传统CTR训练</span>
+          <div style="flex:1; height:20px; background:rgba(248,113,113,0.1); border-radius:4px; overflow:hidden;">
+            <div style="width:5%; height:100%; background:linear-gradient(90deg,#f87171,#ef4444); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:4px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~5%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--amber); width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">HSTU基线</span>
+          <div style="flex:1; height:20px; background:rgba(251,191,36,0.1); border-radius:4px; overflow:hidden;">
+            <div style="width:17%; height:100%; background:linear-gradient(90deg,#a78bfa,#8b5cf6); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:4px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~17%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--green); width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">Kunlun优化</span>
+          <div style="flex:1; height:20px; background:rgba(52,211,153,0.1); border-radius:4px; overflow:hidden;">
+            <div style="width:37%; height:100%; background:linear-gradient(90deg,#34d399,#10b981); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:4px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~37%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:#f97316; width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">OneRec-V2</span>
+          <div style="flex:1; height:20px; background:rgba(249,115,22,0.1); border-radius:4px; overflow:hidden;">
+            <div style="width:62%; height:100%; background:linear-gradient(90deg,#fb923c,#f97316); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:4px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~62%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted); padding:3px 6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:4px; text-align:center;">数据来源：Kunlun(arXiv:2602.10016) B200 GPU | HSTU(arXiv:2402.17152) | OneRec-V2(arXiv:2508.20900) L20 GPU · 36ms延迟</div>
+      <div style="margin-top:4px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--amber); padding:3px 6px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.15); border-radius:4px; text-align:center;">OneRec-V2 Lazy Decoder：计算量↓94% · 训练资源↓90% · 成功扩展至8B参数</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 3: Pain 01 - 优化边际效益递减（展开） -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-3">
+  <div class="section-label">Pain 01 · 边际效益递减</div>
+  <h2>优化边际效益递减：从DIN到SIM，模型越复杂效果提升越小</h2>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; align-items:start;">
+    <!-- 左：案例 + 演进 -->
+    <div>
+      <h4>论文公开数据（可溯源）</h4>
+      <div class="card" style="margin-top:8px; padding:10px;">
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--red); font-weight:700; margin-bottom:6px;">行业趋势：模型升级带来的边际收益持续收窄</div>
+        <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--amber); margin-bottom:8px; padding:4px 8px; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.25); border-radius:4px; line-height:1.5;">
+          <strong>重要说明：</strong>阿里巴巴等厂商的A/B测试CTR具体数字属于商业机密，未在公开论文中披露。以下描述基于论文公开的技术贡献和部署声明。
+        </div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); line-height:1.6;">
+          <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:6px;">
+            <span style="color:var(--cyan); flex-shrink:0;">●</span>
+            <span><strong>DIN (KDD 2018)</strong> — Deep Interest Network：引入Attention激活interest matching<br/><span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">arXiv:1706.06978 · 阿里巴巴20亿样本，生产环境主流量部署</span></span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:6px;">
+            <span style="color:var(--cyan); flex-shrink:0;">●</span>
+            <span><strong>DIEN (AAAI 2019)</strong> — Deep Interest Evolution Network：引入兴趣演化网络，建模兴趣漂移<br/><span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">arXiv:1809.03672 · 在DIN基础上增加时序建模能力</span></span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:6px;">
+            <span style="color:var(--amber); flex-shrink:0;">●</span>
+            <span><strong>BST (2019)</strong> — Behavior Sequence Transformer：Transformer引入序列建模<br/><span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">KDD 2019引用 · 淘宝内部技术（无公开arXiv论文）· 边际收益进一步收窄</span></span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; margin-bottom:6px;">
+            <span style="color:var(--amber); flex-shrink:0;">●</span>
+            <span><strong>MIMN (KDD 2019)</strong> — Multi-channel Interest Memory Network：超长序列建模（千级别行为）<br/><span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">arXiv:1905.09248 · 首次工业级千级序列建模</span></span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px;">
+            <span style="color:var(--amber); flex-shrink:0;">●</span>
+            <span><strong>SIM (RecSys 2020)</strong> — Search-based Interest Model：基于搜索的超长兴趣建模<br/><span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">arXiv:2006.05639 · <strong>CTR+7.1%, RPM+4.4%</strong>，阿里巴巴生产环境</span></span>
+          </div>
+        </div>
+        <div style="margin-top:10px; padding:6px 8px; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:5px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--red);">结论：单靠模型结构升级，边际收益已近天花板</div>
+        <div style="margin-top:8px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--amber); font-weight:600;">边际收益递减的量化佐证</div>
+        <div style="display:flex; flex-direction:column; gap:4px; margin-top:4px;">
+          <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.78em,0.9vw,0.95em);">
+            <span style="color:var(--cyan); flex-shrink:0;">①</span>
+            <span><strong>DIN→DIEN</strong>：引入兴趣演化机制，模型复杂度约+40%，AUC提升约0.01（边际收益极低）</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.78em,0.9vw,0.95em);">
+            <span style="color:var(--amber); flex-shrink:0;">②</span>
+            <span><strong>DIEN→MIMN</strong>：引入UIC Memory Network，复杂度约+60%，效果提升有限（工程复杂度剧增）</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.78em,0.9vw,0.95em);">
+            <span style="color:var(--amber); flex-shrink:0;">③</span>
+            <span><strong>MIMN→SIM</strong>：SIM (RecSys 2020) CTR+7.1%是公开可查的最大单次提升，但已是该路线天花板</span>
+          </div>
+          <div style="display:flex; align-items:flex-start; gap:6px; font-size:clamp(0.78em,0.9vw,0.95em);">
+            <span style="color:var(--red); flex-shrink:0;">④</span>
+            <span><strong>SIM之后</strong>：业界进入"军备竞赛"（特征量/模型/工程复杂度全线上↑），但公开论文中再无显著CTR突破</span>
+          </div>
+        </div>
+        <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted); line-height:1.4;">
+          <strong>论文来源：</strong>DIN arXiv:1706.06978 (KDD 2018) | DIEN arXiv:1809.03672 (AAAI 2019) | MIMN arXiv:1905.09248 (KDD 2019) | SIM arXiv:2006.05639 (RecSys 2020) | BST 淘宝内部（无公开论文）
+        </div>
+      </div>
+
+      <h4 style="margin-top:14px;">三条子问题的本质</h4>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.2); color:var(--red); border-color:rgba(239,68,68,0.3);">1</div>
+          <div class="step-text"><strong>特征"矿山"枯竭</strong>：用户统计特征（点击/播放/点赞）被挖掘殆尽，新特征迭代成本高但泛化性差</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.2); color:var(--red); border-color:rgba(239,68,68,0.3);">2</div>
+          <div class="step-text"><strong>模型天花板</strong>：DLRM架构无法建模"世界知识"（如节日、热点）和"意图Reasoning"（如用户深层需求）</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.2); color:var(--red); border-color:rgba(239,68,68,0.3);">3</div>
+          <div class="step-text"><strong>目标割裂</strong>：召回(喜欢)、粗排(相关)、精排(点击)、重排(多样性)各自优化，全局永远次优</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：算法演进图 + 示意图 -->
+    <div>
+      <h4>算法演进路径与代表工作</h4>
+      <div style="margin-top:8px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--amber); font-weight:600;">第一层：判别式推荐时代（2017–2020）</div>
+      <div class="mermaid-container" style="margin-top:4px; min-height:120px;">
+        <div class="mermaid">
+graph LR
+    A["DIN 2017"] --> B["DIEN 2019"]
+    B --> E["BST 2019"]
+    E --> C["MIMN 2019"]
+    C --> D["SIM 2020"]
+    style A fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style B fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style E fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style C fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style D fill:#1e293b,stroke:#fbbf24,color:#fde68a
+        </div>
+      </div>
+
+      <div style="margin-top:10px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--green); font-weight:600;">第二层：生成式推荐 · 多路径演进（2024–2026）</div>
+      <div class="mermaid-container" style="margin-top:4px; min-height:320px;">
+        <div class="mermaid" data-definition="graph LR
+    ROOT[&quot;生成式推荐演进 · 2024–2026&quot;]
+    ROOT --&gt; R1[&quot;A: Semantic ID生成式&quot;]
+    ROOT --&gt; R2[&quot;B: 纯生成式&quot;]
+    ROOT --&gt; R3[&quot;C: 判别式&quot;]
+
+    R1 --&gt; T1[&quot;TIGER 2024 · Google&quot;]
+    T1 --&gt; O1[&quot;OneRec 2025 · 快手&quot;]
+    O1 --&gt; O2[&quot;OneRec-V2&quot;]
+
+    R2 --&gt; HSTU[&quot;HSTU 2024 · Meta · 1.5T&quot;]
+    HSTU --&gt; UHSTU[&quot;Ultra-HSTU 2026&quot;]
+
+    R3 --&gt; RM[&quot;RankMixer · 字节&quot;]
+    R3 --&gt; MTGR[&quot;MTGR · 美团&quot;]
+    RM --&gt; OT[&quot;OneTrans · 字节&quot;]
+    OT --&gt; MF[&quot;MixFormer 2026&quot;]
+
+    R1 -. &quot;汇合&quot; .-&gt; HY[&quot;混合架构&quot;]
+    R2 -. &quot;汇合&quot; .-&gt; HY
+    R3 -. &quot;汇合&quot; .-&gt; HY
+
+    style ROOT fill:#1e293b,stroke:#94a3b8,color:#e2e8f0
+    style R1 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style R2 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style R3 fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style T1 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style O1 fill:#064e3b,stroke:#34d399,color:#a5f3fc
+    style O2 fill:#064e3b,stroke:#34d399,color:#a5f3fc
+    style HSTU fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style UHSTU fill:#022c22,stroke:#22d3ee,color:#a5f3fc
+    style RM fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style MTGR fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style OT fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style MF fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style HY fill:#1c1917,stroke:#f97316,color:#fed7aa
+">
+        </div>
+      </div>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">
+        <span style="color:#34d399;">路线A</span> Semantic ID生成式（RQ-Kmeans量化 · 中等codebook）&nbsp;
+        <span style="color:#6ee7b7;">路线B</span> 纯生成式（self-attention做特征交互 · NTP Loss · 生成item）&nbsp;
+        <span style="color:#a78bfa;">路线C</span> 判别式（保留sparse embedding · billion-scale大表）&nbsp;
+        <span style="color:#f97316;">汇合</span> 混合架构
+      </div>
+
+      <div style="margin-top:12px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); text-align:center;">核心分水岭：特征交互机制 — self-attention vs MLP + 判别式 vs 生成式</div>
+      <div class="highlight-box-r" style="margin-top:10px;">
+        <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="r">破局方向：</strong>跳出DLRM架构，用LLM的语义建模能力和Scaling Law突破边际收益递减的玻璃顶</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 4: Pain 02 - GPU资源严重浪费（展开） -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-4">
+  <div class="section-label">Pain 02 · 级联误差传播</div>
+  <h2>级联架构的误差传播：召回漏掉的item，精排模型再强也无法挽回</h2>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;">
+    <!-- 左：漏斗图 + 三大代价 -->
+    <div>
+      <h4>传统级联漏斗：误差逐级放大</h4>
+      <div class="mermaid-container" style="margin-top:8px;">
+        <div class="mermaid">
+graph LR
+    A["候选池 1亿"] --> B["召回 10K"]
+    B --> C["粗排 1K"]
+    C --> D["精排 100"]
+    D --> E["重排 10"]
+    B -.-> F["召回误差放大"]
+    C -.-> G["粗排误差放大"]
+    D -.-> H["精排误差放大"]
+    style A fill:#450a0a,stroke:#f87171,color:#fca5a5
+    style B fill:#451a03,stroke:#fbbf24,color:#fde68a
+    style C fill:#451a03,stroke:#fbbf24,color:#fde68a
+    style D fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style E fill:#3b0764,stroke:#a78bfa,color:#ddd6fe
+    style F fill:#450a0a,stroke:#f87171,color:#fca5a5,stroke-width:2px
+    style G fill:#451a03,stroke:#f59e0b,color:#fde68a,stroke-width:2px
+    style H fill:#022c22,stroke:#f59e0b,color:#6ee7b7,stroke-width:2px
+        </div>
+      </div>
+
+      <h4 style="margin-top:12px;">级联架构的三大系统性代价</h4>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        <div class="card card-r" style="padding:10px;">
+          <div style="font-size:clamp(0.88em,1.05vw,1.15em); font-weight:700; color:var(--red); margin-bottom:4px;">① 通信和缓存代价超过50%</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">各模块之间需要传递大量候选集、特征、分数，中间结果占用大量显存和带宽</div>
+        </div>
+        <div class="card card-a" style="padding:10px;">
+          <div style="font-size:clamp(0.88em,1.05vw,1.15em); font-weight:700; color:var(--amber); margin-bottom:4px;">② 误差逐级放大</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">召回漏掉的item，精排再强也无法挽回。Top-K截断导致长尾内容永远没有曝光机会</div>
+        </div>
+        <div class="card card-v" style="padding:10px;">
+          <div style="font-size:clamp(0.88em,1.05vw,1.15em); font-weight:700; color:var(--violet); margin-bottom:4px;">③ 优化目标分散</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">召回、粗排、精排、重排分别由不同团队优化，全局最优永远无法达到，维护成本持续上升</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：生成式破局 + 破局案例 -->
+    <div>
+      <h4>生成式推荐破局</h4>
+      <div class="highlight-box-g" style="margin-top:8px;">
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+          <div>
+            <div style="font-size:clamp(0.78em,0.92vw,0.98em); color:var(--green); margin-bottom:4px;">Meta GR / OneRec（端到端生成）</div>
+            <div class="mermaid" style="font-size:0.85em;">
+graph LR
+    A["用户序列\n序列化"] --> B["Transformer\n(Self-Attention)"]
+    B --> C["NTP Loss"]
+    C --> D["自回归生成\n推荐列表"]
+    style A fill:#1a1a2e,stroke:#888,color:#ccc
+    style B fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style D fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:6px; font-size:clamp(0.75em,0.88vw,0.95em); color:var(--text-secondary); line-height:1.5;">
+          <strong>Meta GR：</strong>从"级联选择"到"端到端生成"，打断误差传播链，CTR+12.4% &nbsp;|&nbsp; <strong>OneRec：</strong>单一LLM替代整个级联架构，从根本消除误差逐级放大，停留时长+1.24%
+        </div>
+        <div style="margin-top:4px; font-size:clamp(0.72em,0.85vw,0.9em); color:var(--text-secondary);">
+          <span style="color:var(--red);">●</span> 级联：每层EMB Lookup+MLP逐级筛选 <span style="margin:0 4px;">|</span> <span style="color:var(--green);">●</span> 生成式：Self-Attention全局建模，无逐级筛选
+        </div>
+      </div>
+
+      <h4 style="margin-top:12px;">生成式破局案例</h4>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+        <div class="card" style="padding:8px 10px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); font-weight:700; color:var(--green); margin-bottom:3px;">长尾内容曝光问题</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary);">级联架构中，Top-K截断导致长尾内容永远没有曝光机会。Meta GR（在线A/B）：CTR+12.4%，快手OneRec：停留时长+1.24%，核心指标全部正向</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 6: LLM破局 + 为什么是现在 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="slide" id="slide-5">
+  <div class="section-label">Pain 03 · GPU资源浪费</div>
+  <h2>GPU资源严重浪费：H100实际MFU仅5%，架构不改堆卡解决不了问题</h2>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; align-items:start;">
+    <!-- 左：MFU数据表 + 根源分析 -->
+    <div>
+      <h4>GPU MFU 利用率实测数据</h4>
+      <div style="margin-top:8px; overflow-x:auto;">
+        <table style="font-size:clamp(0.82em,0.95vw,1.05em); width:100%;">
+          <thead>
+            <tr><th>架构</th><th>训练MFU</th><th>推理MFU</th><th>算子类型</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(239,68,68,0.08);">
+              <td style="color:var(--red);">传统CTR</td>
+              <td style="color:var(--red);">~5%</td>
+              <td style="color:var(--red);">~7%</td>
+              <td>Memory-bound</td>
+            </tr>
+            <tr style="background:rgba(167,139,250,0.08);">
+              <td style="color:var(--purple);">HSTU基线</td>
+              <td style="color:var(--purple);">~17%</td>
+              <td style="color:var(--purple);">~17%</td>
+              <td>TensorCore密集</td>
+            </tr>
+            <tr style="background:rgba(52,211,153,0.08);">
+              <td style="color:var(--green);">Kunlun优化</td>
+              <td style="color:var(--green);">~37%</td>
+              <td style="color:var(--green);">~37%</td>
+              <td>TensorCore密集</td>
+            </tr>
+            <tr style="background:rgba(249,115,22,0.08);">
+              <td style="color:#f97316;">OneRec-V2</td>
+              <td style="color:#f97316;">62%</td>
+              <td style="color:#f97316;">62%</td>
+              <td>Lazy Decoder · L20 GPU</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted); padding:3px 6px; background:rgba(255,255,255,0.03); border-radius:4px;">
+        来源：Kunlun(arXiv:2602.10016) B200 GPU | HSTU(arXiv:2402.17152) | OneRec-V2(arXiv:2508.20900) L20 GPU · 36ms延迟 | LLM为A100/H100典型值
+      </div>
+
+      <h4 style="margin-top:14px;">问题根源：Memory-bound算子主导</h4>
+      <div style="margin-top:8px; display:flex; flex-direction:column; gap:5px;">
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.25);">①</div>
+          <div class="step-text"><strong>Embedding Lookup占主导</strong>：传统CTR以查表为主，不需要密集矩阵乘法，TensorCore利用率极低</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.25);">②</div>
+          <div class="step-text"><strong>HSTU改进</strong>：用Transformer替代MLP，从17%提升到37%，GDPA+HSP+Sliding Window+CompSkip</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(239,68,68,0.15); color:var(--red); border-color:rgba(239,68,68,0.25);">③</div>
+          <div class="step-text"><strong>核心矛盾</strong>：百万购置的H100，实际TensorCore只用了5%，其余95%在等待内存读写</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：MFU柱状图 + 优化路径 -->
+    <div>
+      <h4>MFU对比可视化</h4>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px; padding:10px; background:rgba(0,0,0,0.15); border-radius:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--red); width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">传统CTR</span>
+          <div style="flex:1; height:24px; background:rgba(248,113,113,0.1); border-radius:4px;">
+            <div style="width:5%; height:100%; background:linear-gradient(90deg,#f87171,#ef4444); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:5px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~5%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--purple); width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">HSTU基线</span>
+          <div style="flex:1; height:24px; background:rgba(167,139,250,0.1); border-radius:4px;">
+            <div style="width:17%; height:100%; background:linear-gradient(90deg,#a78bfa,#8b5cf6); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:5px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">~17%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--green); width:85px; text-align:right; flex-shrink:0;">Kunlun优化</span>
+          <div style="flex:1; height:24px; background:rgba(52,211,153,0.1); border-radius:4px;">
+            <div style="width:37%; height:100%; background:linear-gradient(90deg,#34d399,#10b981); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:5px;">
+              <span style="color:white; font-size:clamp(0.78em,0.9vw,0.95em); font-weight:700;">~37%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:clamp(0.78em,0.9vw,0.95em); color:#f97316; width:80px; text-align:right; flex-shrink:0; white-space:nowrap;">OneRec-V2</span>
+          <div style="flex:1; height:24px; background:rgba(249,115,22,0.1); border-radius:4px;">
+            <div style="width:62%; height:100%; background:linear-gradient(90deg,#fb923c,#f97316); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:5px;">
+              <span style="color:white; font-size:clamp(0.72em,0.85vw,0.9em); font-weight:700;">62%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:14px;">MFU提升手段：多方案横向对比</h4>
+      <div style="display:flex; flex-direction:column; gap:5px; margin-top:8px;">
+        <div class="flow-step"><div class="step-num" style="background:rgba(52,211,153,0.15); color:var(--green); border-color:rgba(52,211,153,0.3);">1</div>
+          <div class="step-text"><strong>Kunlun</strong>：GDPA+HSP+SWA+CompSkip（arXiv:2602.10016），17%→37%，Meta B200 GPU，MFU翻倍</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(249,115,22,0.15); color:#f97316; border-color:rgba(249,115,22,0.3);">2</div>
+          <div class="step-text"><strong>OneRec-V2</strong>：Lazy Decoder架构（arXiv:2508.20900），消除Encoder瓶颈，编码资源97.66%→2.34%，计算量↓94%，训练资源↓90%，成功扩展至8B参数</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(167,139,250,0.15); color:var(--purple); border-color:rgba(167,139,250,0.3);">3</div>
+          <div class="step-text"><strong>RankMixer</strong>：Token-Mixing+Per-token FFN+稀疏MoE（arXiv:2507.15551），4.5%→45%，参数规模100倍↑，推理延迟基本持平，字节CIKM 2025</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(251,191,36,0.15); color:var(--amber); border-color:rgba(251,191,36,0.3);">4</div>
+          <div class="step-text"><strong>Ultra-HSTU</strong>：稀疏注意力极致优化（arXiv:2602.16986），Meta ICML 2024 HSTU基础上进一步优化MFU</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(34,211,238,0.15); color:var(--cyan); border-color:rgba(34,211,238,0.3);">5</div>
+          <div class="step-text"><strong>OneTrans</strong>：统一Transformer+序列建模+特征交互联合优化（arXiv:2510.26104），字节WWW 2026，抖音/抖音Lite全流量</div>
+        </div>
+      </div>
+
+      <div class="highlight-box-a" style="margin-top:10px;">
+        <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">核心结论：</strong>MFU从5%→62%的跨越，来自架构革新而非硬件堆砌。Lazy Decoder（OneRec-V2）、稀疏注意力（RankMixer/Ultra-HSTU）、统一Transformer（OneTrans）是三条并行路径</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 5: Pain 03 - 级联架构误差传播（展开） -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="slide" id="slide-6">
+  <div class="section-label">Part 01 · LLM破局</div>
+  <h2>LLM破局契机与时间窗口</h2>
+  <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;">
+    <!-- 左：四大技术突破 -->
+    <div>
+      <h4>LLM关键突破（与推荐系统的关系）</h4>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        <div class="flow-step"><div class="step-num" style="background:rgba(34,211,238,0.15); color:var(--cyan); border-color:rgba(34,211,238,0.3);">1</div>
+          <div class="step-text"><strong>Scaling Law</strong>：模型规模扩大可预测地提升效果，打破传统DLRM的天花板</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(34,211,238,0.15); color:var(--cyan); border-color:rgba(34,211,238,0.3);">2</div>
+          <div class="step-text"><strong>长序列建模能力</strong>：自注意力机制天然适合处理用户行为序列</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(34,211,238,0.15); color:var(--cyan); border-color:rgba(34,211,238,0.3);">3</div>
+          <div class="step-text"><strong>世界知识注入</strong>：预训练语料蕴含跨领域、多模态知识，破解冷启动难题</div>
+        </div>
+        <div class="flow-step"><div class="step-num" style="background:rgba(34,211,238,0.15); color:var(--cyan); border-color:rgba(34,211,238,0.3);">4</div>
+          <div class="step-text"><strong>RL对齐技术</strong>：链式推理能力涌现，可重构推荐系统的"推理逻辑"</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); padding:6px 8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:6px; text-align:center;">Meta HSTU论文首次验证推荐系统Scaling Law成立</div>
+    </div>
+
+    <!-- 右：为什么是现在 -->
+    <div>
+      <h4>为什么是2025-2026年？</h4>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+        <div class="card" style="padding:10px 12px;">
+          <div style="font-size:0.82em; font-weight:700; color:var(--green); margin-bottom:5px;">① LLM生态成熟度达到工业级</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary); line-height:1.6;">
+            <div>训练框架（分布式、混合精度、SFT+RLHF）成熟</div>
+            <div>推理框架（FlashAttention、PagedAttention、Continuous Batching）成熟</div>
+            <div>推理成本从"天价"向"可接受"演进</div>
+          </div>
+        </div>
+        <div class="card" style="padding:10px 12px;">
+          <div style="font-size:0.82em; font-weight:700; color:var(--green); margin-bottom:5px;">② 工业级效果验证打破质疑</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary); line-height:1.6;">
+            <div>Meta GR、快手OneRec、字节RankMixer论文相继发表</div>
+            <div>实际业务指标（停留时长、留存）提升得到验证</div>
+          </div>
+        </div>
+        <div class="card" style="padding:10px 12px;">
+          <div style="font-size:0.82em; font-weight:700; color:var(--green); margin-bottom:5px;">③ 业务倒逼技术升级</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-secondary); line-height:1.6;">
+            <div>用户增长见顶，精细化运营需求迫切</div>
+            <div>GPU资源大量购置但利用率低下的矛盾突出</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工程突破三条路径 -->
+  <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+    <div class="card" style="padding:10px 12px;">
+      <div style="font-size:0.8em; font-weight:700; color:var(--cyan); margin-bottom:6px;">推理效率突破</div>
+      <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-secondary); line-height:1.5;">
+        <div>淘宝NEZHA：1秒→<strong style="color:var(--green);">30ms</strong>超高速解码</div>
+        <div>京东gram：<strong style="color:var(--green);">50ms</strong>完成生成式推荐</div>
+        <div>得物：生成式召回落地，新鲜感与满意度兼顾</div>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 12px;">
+      <div style="font-size:0.8em; font-weight:700; color:var(--cyan); margin-bottom:6px;">架构创新</div>
+      <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-secondary); line-height:1.5;">
+        <div>三塔召回：协同+语义双塔融合</div>
+        <div>SAGE：告别死记硬背和信息茧房</div>
+        <div>语义ID可微分联合优化（首发）</div>
+      </div>
+    </div>
+    <div class="card" style="padding:10px 12px;">
+      <div style="font-size:0.8em; font-weight:700; color:var(--cyan); margin-bottom:6px;">训练范式转变</div>
+      <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-secondary); line-height:1.5;">
+        <div>曝光级训练 → <strong style="color:var(--green);">生成式训练</strong></div>
+        <div>按序列长度采样（采样率反比）</div>
+        <div>端到端建模全流程</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="highlight-box" style="margin-top:12px;">
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">标志性事件：</strong>2024年Meta GR论文（arXiv:2402.01115）首次提出生成式推荐范式，Facebook主APP实现CTR+12.4%。2025年快手OneRec全量上线，停留时长+1.24%（极速版+1.24%，App+0.54%，核心指标100%正向）。</p>
+    <p style="font-size:clamp(0.82em,0.95vw,1.0em); margin-top:6px; color:var(--text-muted);">工程效率标杆：淘宝NEZHA延迟30ms内 · 京东50ms · 阿里RecGPT CTR+5% · 小红书SAGE突破信息茧房</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 7: Part 2 演进全景图 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-7">
+  <div class="section-label">Part 02</div>
+  <h2>推荐算法演进全景图</h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:12px; max-height:100%; overflow:hidden;">
+    <div class="grid grid-2" style="gap:12px;">
+      <div class="mermaid-container" style="margin:0; padding:6px; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; max-height:30%;">
+        <div class="mermaid" style="font-size:0.5em; transform:scale(0.2); transform-origin:center center;">
+graph TD
+    CF["2003协同<br/>过滤"] --> DL["2015深度<br/>学习"]
+    DL --> SEQ["2019序列<br/>爆发"]
+    SEQ --> GEN["2024生成<br/>式时代"]
+    style CF fill:#1e293b,stroke:#94a3b8,color:#94a3b8
+    style DL fill:#1e293b,stroke:#64748b,color:#94a3b8
+    style SEQ fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style GEN fill:#022c22,stroke:#34d399,color:#6ee7b7
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="padding:14px 18px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+            <span style="font-size:0.9em; color:#94a3b8; font-weight:700; background:rgba(248,113,113,0.15); padding:5px 12px; border-radius:4px;">2003-2015</span>
+            <span style="font-size:1.15em; font-weight:800; color:var(--text-primary);">协同过滤时代</span>
+          </div>
+          <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">
+            <strong style="color:var(--red);">代表算法</strong>：ItemCF/UserCF/SVD/Swing/ALS<br/>
+            <strong style="color:var(--text-secondary);">核心问题</strong>：稀疏性难解、冷启动难、泛化能力弱<br/>
+            <strong style="color:var(--text-secondary);">技术本质</strong>：统计共现频率，ID为王，无语义信息
+          </div>
+        </div>
+        <div class="card" style="padding:14px 18px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+            <span style="font-size:0.9em; color:#64748b; font-weight:700; background:rgba(251,191,36,0.15); padding:5px 12px; border-radius:4px;">2015-2019</span>
+            <span style="font-size:1.15em; font-weight:800; color:var(--text-primary);">深度学习时代</span>
+          </div>
+          <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">
+            <strong style="color:var(--amber);">代表算法</strong>：YouTube DNN/Wide&amp;Deep/DeepFM/DCN<br/>
+            <strong style="color:var(--text-secondary);">核心突破</strong>：Embedding+MLP，自动交叉特征，端到端学习<br/>
+            <strong style="color:var(--text-secondary);">技术本质</strong>：向量表示学习，协同信号与特征学习融合
+          </div>
+        </div>
+        <div class="card" style="padding:14px 18px;">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+            <span style="font-size:0.9em; color:#fbbf24; font-weight:700; background:rgba(251,191,36,0.15); padding:5px 12px; border-radius:4px;">2019-2023</span>
+            <span style="font-size:1.15em; font-weight:800; color:var(--text-primary);">序列建模时代</span>
+          </div>
+          <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">
+            <strong style="color:var(--cyan);">代表算法</strong>：DIN/DIEN/SIM/MIMN/BERT4Rec/BST<br/>
+            <strong style="color:var(--text-secondary);">核心突破</strong>：Attention建模用户行为序列依赖，兴趣提取层<br/>
+            <strong style="color:var(--text-secondary);">技术本质</strong>：从单点建模到序列建模，用户兴趣演化显式化
+          </div>
+        </div>
+        <div class="card" style="padding:14px 18px; border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.06);">
+          <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+            <span style="font-size:0.9em; color:#34d399; font-weight:700; background:rgba(52,211,153,0.15); padding:5px 12px; border-radius:4px;">2024-Now</span>
+            <span style="font-size:1.15em; font-weight:800; color:var(--green);">生成式时代</span>
+          </div>
+          <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">
+            <strong style="color:var(--green);">代表算法</strong>：Meta GR/OneRec/RankMixer/Ultra-HSTU<br/>
+            <strong style="color:var(--text-secondary);">核心突破</strong>：NTP Loss替代CTR Loss，Semantic ID，E2E生成<br/>
+            <strong style="color:var(--text-secondary);">技术本质</strong>：自回归生成，范式转变，Scaling Law驱动
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 8: 三条演进主线 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-8">
+  <div class="section-label">Three Evolution Tracks</div>
+  <h2>三条演进主线</h2>
+  <div class="grid grid-3" style="gap:14px; flex:0;">
+    <div class="card card-c" style="padding:14px 16px;">
+      <div style="font-size:0.72em; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">Track 1</div>
+      <h3 style="font-size:1.05em; margin-bottom:10px;">特征工程 → 端到端学习</h3>
+      <div style="margin:10px 0;">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-text">手工特征 FTRL/FM</div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-text">自动交叉 DeepFM/DCN</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-text">端到端序列 DIN/SIM</div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-text">LLM语义Embedding</div></div>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+        <div style="font-size:0.88em; color:var(--cyan); font-weight:600; margin-bottom:4px;">演进本质</div>
+        <div style="font-size:0.9em; color:var(--text-muted); line-height:1.5;">手工 → 自动 → 语义<br/>逐步减少人工介入</div>
+      </div>
+    </div>
+    <div class="card card-v" style="padding:14px 16px;">
+      <div style="font-size:0.72em; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">Track 2</div>
+      <h3 style="font-size:1.05em; margin-bottom:10px;">序列建模升级</h3>
+      <div style="margin:10px 0;">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-text">RNN → Transformer</div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-text">Short-term → Long-term</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-text">固定窗口 → 超长序列</div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-text">Mamba/线性注意力</div></div>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+        <div style="font-size:0.88em; color:var(--purple); font-weight:600; margin-bottom:4px;">演进本质</div>
+        <div style="font-size:0.9em; color:var(--text-muted); line-height:1.5;">从碎片到完整<br/>用户历史理解</div>
+      </div>
+    </div>
+    <div class="card card-g" style="padding:14px 16px;">
+      <div style="font-size:0.72em; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:8px;">Track 3</div>
+      <h3 style="font-size:1.05em; margin-bottom:10px;">判别式 → 生成式</h3>
+      <div style="margin:10px 0;">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-text">ID Embedding查找</div></div>
+        <div class="flow-step"><div class="step-num">2</div><div class="step-text">Semantic ID量化</div></div>
+        <div class="flow-step"><div class="step-num">3</div><div class="step-text">Token-Mixing建模</div></div>
+        <div class="flow-step"><div class="step-num">4</div><div class="step-text">E2E LLM生成推荐</div></div>
+      </div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+        <div style="font-size:0.88em; color:var(--green); font-weight:600; margin-bottom:4px;">演进本质</div>
+        <div style="font-size:0.9em; color:var(--text-muted); line-height:1.5;">从"选择最优"<br/>到"生成最优"</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:12px; display:flex; flex-direction:column; justify-content:center; padding:14px 18px; background:rgba(59,130,246,0.06); border-radius:12px; border:1px solid rgba(59,130,246,0.15); border-left:4px solid #3b82f6;">
+    <div style="font-size:1.1em; font-weight:700; color:var(--text-primary); margin-bottom:8px;">演进本质：范式驱动 vs 数据驱动 vs 人类先验驱动</div>
+    <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">
+      逐步从<strong style="color:var(--red);">人类先验驱动</strong>（手工特征/规则）向<strong style="color:var(--amber);">数据驱动</strong>（端到端学习）向<strong style="color:var(--green);">范式驱动</strong>（生成式自回归）进化。三条主线相互交织：<br/>
+      • <strong>Track 1</strong> 解决特征表示问题 → <strong>Track 2</strong> 解决序列依赖问题 → <strong>Track 3</strong> 解决范式转变问题<br/>
+      • 最终汇合于<strong style="color:var(--green);">生成式推荐</strong>：端到端自回归生成推荐列表，享Scaling Law红利
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 9: 典型算法分类表 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-9">
+  <div class="section-label">Algorithm Taxonomy</div>
+  <h2>典型推荐算法分类</h2>
+  <div style="flex:1; display:grid; grid-template-columns:1.2fr 1fr; gap:16px;">
+    <div style="overflow-x:auto;">
+      <table style="font-size:1em; width:100%;">
+        <thead>
+          <tr>
+            <th style="width:13%;">类别</th>
+            <th style="width:32%;">代表算法</th>
+            <th style="width:30%;">核心贡献</th>
+            <th style="width:25%;">演进阶段</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-r">协同过滤</span></td>
+            <td>ItemCF, UserCF, SVD, ALS, Swing</td>
+            <td>行为共现，ID为王，稀疏性难解</td>
+            <td>2003-2015</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-a">深度匹配</span></td>
+            <td>YouTube DNN, Wide&amp;Deep, DeepFM, DCN</td>
+            <td>Embedding+MLP，自动特征交叉，端到端</td>
+            <td>2015-2019</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-c">序列建模</span></td>
+            <td>DIN, DIEN, SIM, MIMN, BST, BERT4Rec</td>
+            <td>Attention建模序列依赖，兴趣提取层</td>
+            <td>2017-2023</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-v">图神经网络</span></td>
+            <td>GCN, GraphSAGE, GAT, PinSage</td>
+            <td>图结构协同信号传播，邻居聚合</td>
+            <td>2018-2023</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-r">LLM推荐</span></td>
+            <td>P5, InstructRec, ChatRec, TIGER</td>
+            <td>语义表征，零样本泛化，Prompt驱动</td>
+            <td>2023-2024</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-g">生成式推荐</span></td>
+            <td>Meta GR, OneRec, RankMixer, Ultra-HSTU</td>
+            <td>端到端生成，NTP损失，语义ID</td>
+            <td>2024-Now <span class="badge badge-new">NEW</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="padding:14px 16px; background:rgba(248,113,113,0.08); border-radius:10px; border:1px solid rgba(248,113,113,0.2); border-left:3px solid var(--red);">
+        <div style="font-size:1em; font-weight:700; color:var(--red); margin-bottom:6px;">协同过滤时代 (2003-2015)</div>
+        <div style="font-size:0.92em; color:var(--text-muted); line-height:1.6;">
+          <strong>问题</strong>：数据稀疏、冷启动难解<br/>
+          <strong>代表</strong>：Netflix Prize推动矩阵分解普及<br/>
+          <strong>局限</strong>：仅用行为共现，无语义信息
+        </div>
+      </div>
+      <div style="padding:14px 16px; background:rgba(251,191,36,0.08); border-radius:10px; border:1px solid rgba(251,191,36,0.2); border-left:3px solid var(--amber);">
+        <div style="font-size:1em; font-weight:700; color:var(--amber); margin-bottom:6px;">深度学习时代 (2015-2019)</div>
+        <div style="font-size:0.92em; color:var(--text-muted); line-height:1.6;">
+          <strong>突破</strong>：Embedding表示 + 自动特征交叉<br/>
+          <strong>代表</strong>：Google Wide&amp;Deep开启双塔范式<br/>
+          <strong>局限</strong>：仍是判别式，逐点打分
+        </div>
+      </div>
+      <div style="padding:14px 16px; background:rgba(52,211,153,0.08); border-radius:10px; border:1px solid rgba(52,211,153,0.2); border-left:3px solid var(--green);">
+        <div style="font-size:1em; font-weight:700; color:var(--green); margin-bottom:6px;">生成式时代 (2024-Now)</div>
+        <div style="font-size:0.92em; color:var(--text-muted); line-height:1.6;">
+          <strong>范式转变</strong>：从"选择最优"到"生成最优"<br/>
+          <strong>核心</strong>：NTP Loss + Semantic ID + Scaling Law<br/>
+          <strong>代表</strong>：Meta GR/OneRec/RankMixer
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 10: 关键技术演进节点 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-10">
+  <div class="section-label">Key Milestones</div>
+  <h2>关键技术演进节点</h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
+    <div class="mermaid-container" style="margin:0; padding:6px; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+      <div class="mermaid" style="font-size:0.5em; transform:scale(1); transform-origin:center center;">
+graph LR
+    A1["YouTubeDNN"] --> A2["DIN 2017"]
+    A2 --> A3["BERT4Rec 2019"]
+    A3 --> A5["MIMN 2019"]
+    A5 --> A4["SIM 2020"]
+    A4 --> A6["TIGER 2023"]
+    A6 --> A7["Meta GR 2024"]
+    A7 --> A8["RankMixer 2025"]
+    A8 --> A9["OneRec 2025"]
+    A9 --> A10["Ultra-HSTU 2026"]
+    A10 --> A11["TokenMixer 2026"]
+    style A1 fill:#1e293b,stroke:#64748b,color:#94a3b8
+    style A2 fill:#1e293b,stroke:#64748b,color:#94a3b8
+    style A3 fill:#1e293b,stroke:#64748b,color:#94a3b8
+    style A4 fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style A5 fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style A6 fill:#1e293b,stroke:#fbbf24,color:#fde68a
+    style A7 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style A8 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style A9 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style A10 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style A11 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+      </div>
+    </div>
+    <div class="grid grid-2" style="gap:10px;">
+      <div class="card" style="padding:14px 18px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span style="font-size:0.9em; color:#64748b; font-weight:700; background:rgba(251,191,36,0.15); padding:5px 12px; border-radius:4px;">2018-2021</span>
+          <span style="font-size:1.15em; font-weight:800; color:var(--text-primary);">Attention序列建模</span>
+        </div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">DIN引入注意力激活兴趣 · MIMN用Memory机制突破超长序列 · BST首次将Transformer引入推荐系统</div>
+        <div style="font-size:0.92em; margin-top:8px; color:var(--amber);">核心价值：用户兴趣显式化建模</div>
+      </div>
+      <div class="card" style="padding:14px 18px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span style="font-size:0.9em; color:#fbbf24; font-weight:700; background:rgba(251,191,36,0.15); padding:5px 12px; border-radius:4px;">2023</span>
+          <span style="font-size:1.15em; font-weight:800; color:var(--text-primary);">Semantic ID突破</span>
+        </div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">TIGER首创生成式召回：用RQ-Kmeans量化item为语义token序列，自回归生成推荐</div>
+        <div style="font-size:0.92em; margin-top:8px; color:var(--amber);">核心价值：首个生成式召回范式</div>
+      </div>
+      <div class="card" style="padding:14px 18px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span style="font-size:0.9em; color:#34d399; font-weight:700; background:rgba(52,211,153,0.15); padding:5px 12px; border-radius:4px;">2024</span>
+          <span style="font-size:1.15em; font-weight:800; color:var(--green);">生成式推荐元年</span>
+        </div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">Meta GR开山之作：NTP Loss替代CTR Loss · HSTU证明Scaling Law · Ultra-HSTU极致优化MFU 17%→37%</div>
+        <div style="font-size:0.92em; margin-top:8px; color:var(--green);">核心价值：范式转变，Scaling Law验证</div>
+      </div>
+      <div class="card" style="padding:14px 18px; border-color:rgba(52,211,153,0.4); background:rgba(52,211,153,0.06);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span style="font-size:0.9em; color:#22d3ee; font-weight:700; background:rgba(34,211,238,0.15); padding:5px 12px; border-radius:4px;">2025-2026</span>
+          <span style="font-size:1.15em; font-weight:800; color:var(--cyan);">工业级落地</span>
+        </div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">OneRec快手端到端生成 · RankMixer统一Token-Mixing架构 · TokenMixer-Large 7B-15B参数</div>
+        <div style="font-size:0.92em; margin-top:8px; color:var(--cyan);">核心价值：从学术到工业全面落地</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 11: Part 3 生成式推荐核心 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-11">
+  <div class="section-label">Part 03</div>
+  <h2>生成式推荐核心技术解析</h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:14px;">
+    <!-- 判别式 vs 生成式对比 -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div style="padding:16px 18px; background:rgba(248,113,113,0.06); border-radius:12px; border:1px solid rgba(248,113,113,0.2); border-left:4px solid var(--red);">
+        <div style="font-size:1.1em; font-weight:800; color:var(--red); margin-bottom:10px;">判别式推荐 Discriminative</div>
+        <div style="font-size:1em; line-height:1.7;">
+          <span style="color:var(--text-primary);">P(click|user, item) → 逐一打分排序</span><br/>
+          <span style="color:var(--text-muted);">封闭候选集 · CTR/CVR损失 · Top-K选择</span>
+        </div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(248,113,113,0.15);">
+          <div style="font-size:0.92em; color:var(--text-muted); line-height:1.6;">
+            <strong style="color:var(--red);">局限</strong>：候选集内选择，无法生成新item<br/>
+            <strong style="color:var(--text-secondary);">本质</strong>：从已知候选中挑最优
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 18px; background:rgba(52,211,153,0.08); border-radius:12px; border:1px solid rgba(52,211,153,0.3); border-left:4px solid var(--green);">
+        <div style="font-size:1.1em; font-weight:800; color:var(--green); margin-bottom:10px;">生成式推荐 Generative</div>
+        <div style="font-size:1em; line-height:1.7;">
+          <span style="color:var(--text-primary);">Generate(user_history) → [items]</span><br/>
+          <span style="color:var(--text-muted);">开放式生成 · NTP损失 · 自回归预测</span>
+        </div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(52,211,153,0.15);">
+          <div style="font-size:0.92em; color:var(--text-muted); line-height:1.6;">
+            <strong style="color:var(--green);">优势</strong>：可生成全新item，享Scaling Law<br/>
+            <strong style="color:var(--text-secondary);">本质</strong>：自回归预测下一个token
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 三条技术路线 -->
+    <div style="font-size:1.05em; font-weight:700; color:var(--text-primary); margin-bottom:-4px;">三条技术路线对比</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+      <div class="card card-c" style="padding:12px 14px;">
+        <div style="font-size:0.92em; font-weight:700; color:var(--cyan); margin-bottom:8px;">路线A · Semantic ID生成式</div>
+        <div style="font-size:0.88em; color:var(--text-secondary); line-height:1.6;">
+          <strong style="color:var(--text-primary);">编码</strong>：item → [L1,L2,L3] 三层语义token<br/>
+          <strong style="color:var(--text-primary);">解码</strong>：受限空间，每位置选一个token<br/>
+          <strong style="color:var(--text-primary);">语义</strong>：强，同语义item共享prefix<br/>
+          <strong style="color:var(--text-primary);">冷启动</strong>：友好，新item生成semantic ID
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+          <div style="font-size:0.85em; color:var(--cyan);">代表：TIGER (Google) · OneRec (快手)</div>
+          <div style="font-size:0.82em; color:var(--text-muted); margin-top:3px;">RecSys 2024 · arXiv:2512.07424</div>
+        </div>
+      </div>
+      <div class="card card-g" style="padding:12px 14px; border-color:rgba(52,211,153,0.35); background:rgba(52,211,153,0.04);">
+        <div style="font-size:0.92em; font-weight:700; color:var(--green); margin-bottom:8px;">路线B · 纯生成式Transformer</div>
+        <div style="font-size:0.88em; color:var(--text-secondary); line-height:1.6;">
+          <strong style="color:var(--text-primary);">编码</strong>：原子ID as token，10B级vocab<br/>
+          <strong style="color:var(--text-primary);">解码</strong>：全量item空间，需近似搜索<br/>
+          <strong style="color:var(--text-primary);">语义</strong>：弱，依赖隐式学习<br/>
+          <strong style="color:var(--text-primary);">冷启动</strong>：困难，需足够曝光积累
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(52,211,153,0.2);">
+          <div style="font-size:0.85em; color:var(--green);">代表：HSTU · Ultra-HSTU (Meta)</div>
+          <div style="font-size:0.82em; color:var(--text-muted); margin-top:3px;">ICML 2024 · arXiv:2602.16986</div>
+        </div>
+      </div>
+      <div class="card card-a" style="padding:12px 14px; border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.04);">
+        <div style="font-size:0.92em; font-weight:700; color:var(--amber); margin-bottom:8px;">路线C · Transformer序列建模+判别式排序</div>
+        <div style="font-size:0.88em; color:var(--text-secondary); line-height:1.6;">
+          <strong style="color:var(--text-primary);">编码</strong>：保留sparse embedding table<br/>
+          <strong style="color:var(--text-primary);">训练</strong>：二分类交叉熵CTR loss（不是NTP）<br/>
+          <strong style="color:var(--text-primary);">评估</strong>：AUC/GAUC，判别式打分<br/>
+          <strong style="color:var(--text-primary);">代表</strong>：RankMixer · TokenMixer · MTGR · GRAB
+        </div>
+        <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(251,191,36,0.2);">
+          <div style="font-size:0.85em; color:var(--amber);">代表：RankMixer · TokenMixer-Large · 美团MTGR · 百度GRAB</div>
+          <div style="font-size:0.82em; color:var(--text-muted); margin-top:3px;">CIKM 2025 · arXiv:2602.06563 · SIGIR 2025</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 12: Semantic ID 架构 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-12">
+  <div class="section-label">Semantic ID</div>
+  <h2>Semantic ID：突破离散ID的天花板</h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:12px; max-height:100%; overflow:hidden;">
+    <div class="grid grid-2" style="gap:10px;">
+      <div>
+        <h4>问题：传统ID没有语义</h4>
+        <div class="code-block" style="font-size:clamp(0.82em,0.95vw,1.05em);">
+video_1024892 → [0.23, -0.71, ...]<br/>
+article_882745 → [0.19, -0.68, ...]<br/>
+item_442109   → [0.25, -0.70, ...]<br/><br/>
+<span style="color:#94a3b8">// 相近内容ID不同，Embedding割裂</span>
+        </div>
+        <div class="highlight-box-r" style="margin-top:10px;">
+          <p style="font-size:0.82em;"><strong class="r">ID是"身份证号"</strong>，不是"基因序列"。两个同话题视频在ID层面毫无关联。</p>
+        </div>
+      </div>
+      <div>
+        <h4>Semantic ID (TIGER路线)</h4>
+        <div class="code-block" style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--green);">
+"AI论文_Transformer架构_2024" → <br/>
+  <span style="color:#34d399">[0.91, 0.85, 0.72, ...]</span>  ← LLM语义向量<br/>
+  <span style="color:#34d399">[23, 7, 108, 45]</span>          ← RQ-Kmeans量化码<br/><br/>
+<span style="color:#94a3b8">// 语义相近 → 量化码相近 → 泛化能力</span>
+        </div>
+        <div class="highlight-box-g" style="margin-top:10px;">
+          <p style="font-size:0.82em;"><strong class="g">为什么用RQ-Kmeans而非RQ-VAE？</strong> RQ-VAE存在codebook collapse，大量token从不被使用。RQ-Kmeans强制均衡聚类。</p>
+        </div>
+      </div>
+    </div>
+    <div class="mermaid-container" style="margin:0; padding:6px; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; max-height:100%;">
+      <div class="mermaid" style="font-size:0.5em; transform:scale(0.25); transform-origin:center center;">
+graph TD
+    V["视频/商品原始内容"] --> E["LLM Encoder"]
+    E --> Q["RQ-Kmeans量化"]
+    Q --> L1["L1: 0-511 粗粒度"]
+    Q --> L2["L2: 0-511 中粒度"]
+    Q --> L3["L3: 0-511 细粒度"]
+    L1 & L2 & L3 --> SID["Semantic ID = [L1,L2,L3]"]
+    SID --> T["Transformer序列建模"]
+    style V fill:#1e293b,stroke:#94a3b8,color:#94a3b8
+    style E fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style Q fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style L1 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style L2 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style L3 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style SID fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style T fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 13: 超长序列建模 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-13">
+  <div class="section-label">Long Sequence</div>
+  <h2>超长序列建模：从4K到1M Token</h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:12px; max-height:100%; overflow:hidden;">
+    <div style="overflow-x:auto;">
+      <table style="font-size:clamp(0.82em,0.95vw,1.1em);">
+        <thead>
+          <tr><th>方案</th><th>核心思路</th><th>代表工作</th><th>序列长度</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag tag-r">滑动窗口</span></td>
+            <td>截取最近N个行为</td>
+            <td>SASRec, BERT4Rec</td>
+            <td>~50-100</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-a">Memory</span></td>
+            <td>外部记忆网络</td>
+            <td>MFM, NRM</td>
+            <td>~500</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-v">Compressor</span></td>
+            <td>层级压缩summarize</td>
+            <td>Recformer, Markpts</td>
+            <td>~2K-10K</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-c">LLM Native</span></td>
+            <td>百万Token直接输入</td>
+            <td>OneRec, IALM</td>
+            <td>100K-1M+</td>
+          </tr>
+          <tr>
+            <td><span class="tag tag-g">Linear Attn</span></td>
+            <td>Mamba/线性注意力降复杂度</td>
+            <td>Ultra-HSTU, HSTM</td>
+            <td>无限制</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mermaid-container" style="margin:0; padding:6px; width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; flex:1;">
+      <div class="mermaid" style="font-size:0.5em; transform:scale(0.45); transform-origin:center center;">
+sequenceDiagram
+    participant U as 用户行为序列
+    participant M as 传统模型
+    participant L as LLM模型
+    participant O as OneRec/Ultra-HSTU
+
+    Note over U,M: 传统: 截断/压缩
+    U->>M: [行为₁, 行为₂...行为₁₀₀] (截断)
+    M-->>O: 丢失10000+历史信息
+
+    Note over U,O: 生成式: 完整序列
+    U->>O: [行为₁...行为₁₀₀₀...行为₁₀₀₀₀] (完整)
+    O-->>U: 自注意力自己决定哪些历史重要
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 14: Meta GR 详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-14">
+  <div class="section-label">Meta GR</div>
+  <h2>Meta GR：生成式推荐开山之作 <span class="badge badge-new">2024.2</span></h2>
+  <div style="flex:1; display:flex; flex-direction:column; gap:12px; max-height:100%; overflow:hidden;">
+    <div class="grid grid-2" style="gap:14px;">
+      <div>
+        <div class="paper-ref">
+          <div class="title">Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations</div>
+          <div class="meta">Meta · ICML 2024 · arXiv:2402.17152</div>
+          <div class="abstract">首次将工业推荐系统从DLRM范式推进到统一生成式序列建模范式，1.5T参数Scaling Law验证。</div>
+        </div>
+        <h4 style="margin-top:12px;">核心重构</h4>
+        <div class="flow-step"><div class="step-num">①</div><div class="step-text"><strong>统一输入序列：</strong>用户行为+类别特征→统一时间序列，数值特征由模型隐式学习</div></div>
+        <div class="flow-step"><div class="step-num">②</div><div class="step-text"><strong>任务统一：</strong>召回+排序统一为序列转导任务，不再割裂</div></div>
+        <div class="flow-step"><div class="step-num">③</div><div class="step-text"><strong>Target-aware建模：</strong>candidate item在表示构建阶段就参与，而非仅在打分阶段</div></div>
+        <h4 style="margin-top:12px;">HSTU架构创新</h4>
+        <div class="code-block" style="font-size:clamp(0.7em,0.85vw,0.9em);">
+<span style="color:#94a3b8">// 核心公式</span><br/>
+U,Q,K,V=φ₁(f₁(X))<br/>
+A(X)V(X)=φ₂(QKᵀ+r^{p,t})V(X)<br/>
+Y=f₂(Norm(A(X)V(X))⊙U(X))<br/><br/>
+<span style="color:#94a3b8">// 三项关键改动</span><br/>
+① Pointwise聚合注意力（保留强度信息）<br/>
+② 显式Gating分支（选择性信息吸收）<br/>
+③ 显式时间bias（位置+真实时间间隔）
+        </div>
+        <h4 style="margin-top:12px;">训练推理优化</h4>
+        <div class="code-block" style="font-size:clamp(0.7em,0.85vw,0.9em);">
+<span style="color:#94a3b8">// Generative Training</span><br/>
+多条监督信号共享一次编码→计算量↓O(N)<br/><br/>
+<span style="color:#94a3b8">// M-FALCON推理</span><br/>
+Microbatch拼入+Mask隔离+KV Cache复用<br/>
+推理加速 5.3×~15.2× vs FlashAttention2
+        </div>
+        <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
+          <div class="stat-box">
+            <div class="stat-num" style="color:var(--green);">+12.4%</div>
+            <div class="stat-label">CTR</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" style="color:var(--cyan);">1.5T</div>
+            <div class="stat-label">参数</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" style="color:var(--amber);">65.8%</div>
+            <div class="stat-label">NDCG↑</div>
+          </div>
+        </div>
+        <div class="highlight-box" style="margin-top:6px;">
+          <p style="font-size:0.7em;"><strong class="c">工业价值：</strong>同时覆盖召回+排序两阶段，端到端收益</p>
+        </div>
+      </div>
+      <div>
+        <h4>HSTU/GR 完整架构</h4>
+        <div class="mermaid-container" style="display:flex; align-items:center; justify-content:center; margin:0; padding:6px; width:100%; overflow:hidden; max-height:60%;">
+          <div class="mermaid" style="font-size:0.65em; transform:scale(0.45); transform-origin:center center;">
+graph TD
+    subgraph Input["输入层"]
+        H["用户历史序列<br/>[行为₁...行为ₙ]"]
+        C["Candidate Item<br/>Φᵢ₊₁"]
+    end
+    subgraph Encoder["HSTU Encoder堆叠"]
+        L1["HSTU Layer 1<br/>Pointwise Attn + Gating"]
+        L2["HSTU Layer 2<br/>Pointwise Attn + Gating"]
+        LN["... Layer N"]
+    end
+    subgraph Output["输出层"]
+        R["Retrieval: HR@100 ↑36.9%"]
+        B["Ranking: NE ↓0.4845"]
+    end
+    H --> L1
+    C --> L1
+    L1 --> L2
+    L2 --> LN
+    LN --> R
+    LN --> B
+    style H fill:#1e293b,stroke:#94a3b8,color:#94a3b8
+    style C fill:#1e293b,stroke:#f59e0b,color:#fde68a
+    style L1 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style L2 fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style LN fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style R fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style B fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 15: OneRec 详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-15">
+  <div class="section-label">OneRec · 快手</div>
+  <h2>快手OneRec：端到端颠覆式路线 <span class="badge badge-new">2025.2</span></h2>
+  <div class="grid grid-2" style="margin-top:12px; gap:14px;">
+    <div>
+      <div class="paper-ref">
+        <div class="title">OneRec: Unifying Retrieve and Rank with Generative Recommender</div>
+        <div class="meta">快手 · arXiv:2502.18965 · 2025.2</div>
+        <div class="abstract">端到端生成式推荐，用单一LLM完全替代传统级联架构。创新：RQ-Kmeans语义ID + Session-wise生成 + IPA迭代偏好对齐。</div>
+      </div>
+      <div style="margin-top:10px;">
+        <h4>三大技术创新</h4>
+        <div class="flow-step"><div class="step-num">①</div><div class="step-text"><strong>Semantic ID编码：</strong>RQ-Kmeans三层量化，同话题视频共享前缀token</div></div>
+        <div class="flow-step"><div class="step-num">②</div><div class="step-text"><strong>Session-wise生成：</strong>整个推荐列表一次性生成，item间相互感知</div></div>
+        <div class="flow-step"><div class="step-num">③</div><div class="step-text"><strong>IPA对齐：</strong>DPO优化超越历史系统天花板</div></div>
+      </div>
+      <h4 style="margin-top:10px;">架构特点</h4>
+      <div class="code-block" style="font-size:clamp(0.65em,0.8vw,0.85em);">
+<span style="color:#94a3b8">// Encoder-Decoder + MoE</span><br/>
+编码器：用户历史行为序列 → 隐表示<br/>
+解码器：自回归生成推荐视频序列<br/>
+MoE稀疏专家：参数量Scaling↑ 计算量↑有限
+      </div>
+      <h4 style="margin-top:10px;">性能优化</h4>
+      <div class="code-block" style="font-size:clamp(0.65em,0.8vw,0.85em);">
+<span style="color:#94a3b8">// 生成式训练</span><br/>
+多条监督信号共享一次编码 → 计算量↓O(N)<br/><br/>
+<span style="color:#94a3b8">// IPA对齐</span><br/>
+Reward模型模拟用户满意度 + DPO优化<br/>
+Beam Search生成候选 → RM打分 → 偏好对构建
+      </div>
+      <div class="stat-row" style="margin-top:10px; justify-content:flex-start; gap:12px;">
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--green);">+1.24%</div>
+          <div class="stat-label">停留时长(极速版)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--cyan);">+0.54%</div>
+          <div class="stat-label">停留时长(App)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--purple);">100%</div>
+          <div class="stat-label">核心指标正向</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:8px;">
+        <p style="font-size:0.7em;"><strong class="c">核心价值：</strong>端到端统一建模，简化架构+打破效果天花板</p>
+      </div>
+    </div>
+    <div>
+      <h4>OneRec 模型架构</h4>
+      <div class="mermaid-container" style="display:flex; align-items:center; justify-content:center; margin:0; padding:6px; width:100%; overflow:hidden; max-height:50%;">
+        <div class="mermaid" style="font-size:0.65em; transform:scale(0.45); transform-origin:center center;">
+graph TD
+    subgraph Input["输入层"]
+        U["用户行为序列<br/>[视频₁...视频ₙ]"]
+        S["Item元数据<br/>标题/标签/类别"]
+    end
+    subgraph Encode["编码器"]
+        E["Transformer Encoder<br/>用户序列 → 隐表示"]
+        RQ["RQ-Kmeans<br/>三层量化 Semantic ID"]
+    end
+    subgraph Decode["解码器 + IPA"]
+        D1["Transformer Decoder Layer 1"]
+        D2["Transformer Decoder Layer 2"]
+        DN["... Layer N"]
+        IPA["IPA对齐<br/>Reward模型 + DPO"]
+    end
+    subgraph Output["输出层"]
+        B["Beam Search<br/>生成候选session"]
+        O["推荐列表<br/>[视频ₜ₊₁...视频ₜ₊ₖ]"]
+    end
+    U --> E
+    S --> RQ
+    E --> D1
+    RQ --> D1
+    D1 --> D2
+    D2 --> DN
+    DN --> IPA
+    IPA --> B
+    B --> O
+    style U fill:#1e293b,stroke:#94a3b8,color:#94a3b8
+    style S fill:#1e293b,stroke:#f59e0b,color:#fde68a
+    style E fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style RQ fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style D1 fill:#1e3a5f,stroke:#60a5fa,color:#93c5fd
+    style D2 fill:#1e3a5f,stroke:#60a5fa,color:#93c5fd
+    style DN fill:#1e3a5f,stroke:#60a5fa,color:#93c5fd
+    style IPA fill:#4a1d96,stroke:#a78bfa,color:#c4b5fd
+    style B fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style O fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 16: Ultra-HSTU 详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-16">
+  <div class="section-label">Ultra-HSTU · Meta</div>
+  <h2>Ultra-HSTU：稀疏注意力极致优化 <span class="badge badge-new">NEW</span></h2>
+  <div class="grid grid-2" style="margin-top:12px; gap:14px;">
+    <div>
+      <div class="paper-ref">
+        <div class="title">Bending the Scaling Law Curve in Large-Scale Recommendation Systems</div>
+        <div class="meta">Meta · arXiv:2602.16986 · 2026.02</div>
+        <div class="abstract">端到端模型-系统协同设计，半局部注意力(SLA)突破O(n²)瓶颈。输入序列优化+混合精度+动态拓扑实现5×训练、21×推理加速，生产环境消费和互动指标提升4-8%。</div>
+      </div>
+      <div style="margin-top:10px;">
+        <h4>关键优化技术</h4>
+        <div class="flow-step"><div class="step-num">①</div><div class="step-text"><strong>输入序列优化：</strong>Item-Action联合嵌入（序列长度减半）+ 异构Action编码 + 负载均衡随机长度(LBSL, 训练吞吐+15%)</div></div>
+        <div class="flow-step"><div class="step-num">②</div><div class="step-text"><strong>半局部注意力(SLA)：</strong>局部窗口K₁+全局窗口K₂，复杂度O((K₁+K₂)·L)，突破O(n²)瓶颈；比NSA多了全局窗口，对长序列推荐至关重要</div></div>
+        <div class="flow-step"><div class="step-num">③</div><div class="step-text"><strong>混合精度训练/推理：</strong>BF16+FP8 GEMM(加速主计算) + INT4嵌入量化(减少推理通信) + 融合量化kernel</div></div>
+        <div class="flow-step"><div class="step-num">④</div><div class="step-text"><strong>异构硬件SLA Kernel：</strong>FlashAttention-V3风格流水线，自定义SiLU attention和SLA mask；NVIDIA H100和AMD MI300x各获2×加速</div></div>
+        <div class="flow-step"><div class="step-num">⑤</div><div class="step-text"><strong>动态拓扑设计：</strong>Attention Truncation（前N₁层全序列，后N₂层截取最新片段）+ MoT（异构行为多编码器分别处理后融合）</div></div>
+        <div class="flow-step"><div class="step-num">⑥</div><div class="step-text"><strong>内存优化：</strong>选择性激活重计算（重计算6个前向tensor，HBM每层7GB→2.3GB）+ Jagged Tensor（消除padding浪费）</div></div>
+      </div>
+      <h4 style="margin-top:10px;">vs 标准Transformer</h4>
+      <div class="code-block" style="font-size:clamp(0.65em,0.8vw,0.85em);">
+<span style="color:#94a3b8">// 标准Transformer</span><br/>
+Self-Attention: O(n²) 复杂度<br/>
+长序列计算成本呈二次增长<br/><br/>
+<span style="color:#94a3b8">// Ultra-HSTU</span><br/>
+稀疏注意力: O(n) 复杂度<br/>
+支持更长序列 + GPU高效利用
+      </div>
+      <div class="stat-row" style="margin-top:10px; justify-content:flex-start; gap:12px;">
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--green);">5×</div>
+          <div class="stat-label">训练加速</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--cyan);">21×</div>
+          <div class="stat-label">推理加速</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--amber);">4-8%</div>
+          <div class="stat-label">生产提升</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:8px;">
+        <p style="font-size:0.7em;"><strong class="c">核心价值：</strong>稀疏注意力使GPU接近理论MFU上限，Scaling Law曲线被"弯曲"</p>
+      </div>
+    </div>
+    <div>
+      <h4>Ultra-HSTU 模型架构</h4>
+      <div style="display:flex; align-items:center; justify-content:center; margin:0; padding:6px; width:100%; overflow:hidden; max-height:65%;">
+        <img src="ultra-hstu-fig2.png" alt="Figure 2: Model design overview (a) General recommendation model design, (b) Input sequence optimizations, (c) Semi-local attention mask, (d) Attention truncation" style="max-width:100%; max-height:100%; object-fit:contain;" />
+      </div>
+      <p style="font-size:0.65em; color:var(--text-muted); text-align:center; margin-top:6px;">图(a-d): (a)通用推荐模型设计 (b)输入序列优化 (c)半局部注意力Mask (d)Attention Truncation</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 17: TokenMixer-Large 详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-17">
+  <div class="section-label">TokenMixer-Large · 字节</div>
+  <h2>TokenMixer-Large：稀疏MoE+Token-Mixing <span class="badge badge-new">NEW</span></h2>
+  <div class="grid grid-2" style="margin-top:12px; gap:14px;">
+    <div>
+      <div class="paper-ref">
+        <div class="title">TokenMixer-Large: Scaling Up Large Ranking Models in Industrial Recommenders</div>
+        <div class="meta">ByteDance · arXiv:2602.06563 · 2026.02</div>
+        <div class="abstract">RankMixer后继者，引入Mixing-and-Reverting操作+层间残差+辅助Loss解决深度网络梯度消失，配合Sparse Per-token MoE实现参数高效扩展。7B/15B参数在抖音电商/广告/直播多场景上线。</div>
+      </div>
+      <div style="margin-top:10px;">
+        <h4>关键优化技术</h4>
+        <div class="flow-step"><div class="step-num">①</div><div class="step-text"><strong>Mixing-and-Reverting：</strong>Token混合后逆向恢复，解除深度配置中的次优残差路径，稳定梯度传播</div></div>
+        <div class="flow-step"><div class="step-num">②</div><div class="step-text"><strong>层间残差连接：</strong>Inter-layer residuals缓解深层Transformer的梯度消失/爆炸问题</div></div>
+        <div class="flow-step"><div class="step-num">③</div><div class="step-text"><strong>辅助Loss正则：</strong>MoE负载均衡辅助Loss，确保专家路由稳定收敛</div></div>
+        <div class="flow-step"><div class="step-num">④</div><div class="step-text"><strong>Sparse Per-token MoE：</strong>每个token独立路由选择专家子集（非全专家激活），实现高效参数扩展</div></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:10px; gap:8px;">
+        <div class="card" style="padding:10px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-bottom:4px;">参数量</div>
+          <div style="font-size:1.4em; font-weight:800; color:var(--cyan);">7B / 15B</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">在线/离线</div>
+        </div>
+        <div class="card" style="padding:10px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-bottom:4px;">电商订单</div>
+          <div style="font-size:1.4em; font-weight:800; color:var(--green);">+1.66%</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">GMV +2.98%</div>
+        </div>
+        <div class="card" style="padding:10px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-bottom:4px;">广告ADSS</div>
+          <div style="font-size:1.4em; font-weight:800; color:var(--amber);">+2.0%</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">直播收入+1.4%</div>
+        </div>
+        <div class="card" style="padding:10px;">
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-bottom:4px;">核心贡献</div>
+          <div style="font-size:1.4em; font-weight:800; color:var(--purple);">梯度稳定</div>
+          <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted);">深层不退化</div>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:8px;">
+        <p style="font-size:0.7em;"><strong class="c">核心洞察：</strong>Token-Mixing将特征交互拆为token-level（序列依赖）和feature-level（专家路由），避免O(n²) attention同时保持强表达力</p>
+      </div>
+    </div>
+    <div>
+      <h4>TokenMixer-Large 模型架构</h4>
+      <div style="display:flex; align-items:center; justify-content:center; margin:0; padding:6px; width:100%; overflow:hidden; max-height:65%;">
+        <img src="tokenmixer-fig2.png" alt="TokenMixer-Large architecture overview from arXiv:2602.06563" style="max-width:100%; max-height:100%; object-fit:contain;" />
+      </div>
+      <p style="font-size:0.65em; color:var(--text-muted); text-align:center; margin-top:6px;">上: TokenMixer-Large整体架构 (arXiv:2602.06563 Fig.1)</p>
+      <div style="display:flex; align-items:center; justify-content:center; margin:6px 0; padding:4px; width:100%; overflow:hidden;">
+        <img src="tokenmixer-fig1.png" alt="TokenMixer-M vs RankMixer gradient comparison" style="max-width:100%; max-height:55%; object-fit:contain;" />
+      </div>
+      <p style="font-size:0.65em; color:var(--text-muted); text-align:center; margin-top:4px;">下: Mixing-Reverting梯度稳定性对比 (arXiv:2602.06563 Fig.2)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 18: Part 4 大厂路线 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-18">
+  <div class="section-label">Part 04</div>
+  <h2>大厂技术路线对比 2025-2026</h2>
+  <div style="margin-top:10px; overflow-x:auto;">
+<table style="font-size:clamp(0.75em,0.88vw,1.0em);">
+      <thead>
+        <tr><th>公司</th><th>代表工作</th><th>技术路线</th><th>激进程度</th><th>核心收益</th><th>状态</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-c">Meta</span></td>
+          <td>GR/HSTU → ULTRA-HSTU → VLM</td>
+          <td>生成式GR范式，线性注意力Scaling，系统-模型协同</td>
+          <td><span style="color:var(--amber);">渐进+突破</span></td>
+          <td>NDCG+65.8%, 5x训练21x推理, 消费+4%</td>
+          <td>开创者，持续深耕</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-g">快手</span></td>
+          <td>OneRec/OneLoc/OneMall/GR4AD/PROMISE</td>
+          <td>全场景One系列：生成式→判别式统一架构</td>
+          <td><span style="color:var(--red);">激进→务实</span></td>
+          <td>停留时长+1.6%, 统一Scaling框架</td>
+          <td>多场景One系列布局</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-v">字节/抖音</span></td>
+          <td>HLLM/STCA/LEMUR/TRM/MixFormer/MSN/MERGE/UG-Sep</td>
+          <td>判别式Scaling，4条主线并行：长序列/输入重写/统一主干/推理优化</td>
+          <td><span style="color:var(--green);">渐进务实</span></td>
+          <td>订单+1.66%, 广告ADSS+2.0%, 推理-20%</td>
+          <td>全程判别式，最完整布局</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-y">美团</span></td>
+          <td>MTGR → SUAN/HoMer/EGA-V2</td>
+          <td>生成式GR，保留交叉特征，广告端到端</td>
+          <td><span style="color:var(--amber);">深耕渐进</span></td>
+          <td>65x FLOPs提升, 广告端到端</td>
+          <td>多篇论文积累</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-b">腾讯/Shopee</span></td>
+          <td>OnePiece → GPR/OneRanker</td>
+          <td>上下文工程 → 广告one-model深融合，三层矛盾处理</td>
+          <td><span style="color:var(--amber);">学术深耕</span></td>
+          <td>GMV+2%/UU, 广告+2.90%</td>
+          <td>Shopee主搜+广告</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-r">阿里</span></td>
+          <td>LUM/SSR + SORT(判别式另一条路)</td>
+          <td>长序列建模 + 显式稀疏性，SORT系统性改造Transformer</td>
+          <td><span style="color:var(--purple);">学术低调</span></td>
+          <td>SIGIR 2026, arXiv:2603.03988</td>
+          <td>判别式另一条路</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-a">京东</span></td>
+          <td>xLLM/xGR + OxygenREC</td>
+          <td>LLM推理引擎优化 + 慢思考快生成拆分</td>
+          <td><span style="color:var(--green);">工程稳健</span></td>
+          <td>P99延迟控制, 吞吐1.7x MindIE</td>
+          <td>开源xLLM</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-a">百度</span></td>
+          <td>GRAB</td>
+          <td>序列优先CTR, CamA注意力, STS训练策略</td>
+          <td><span style="color:var(--green);">稳健务实</span></td>
+          <td>CTR+3.49%, 收入+3.05%</td>
+          <td>2026年最新</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-k">Google</span></td>
+          <td>TIGER, Semantic ID</td>
+          <td>RQ-VAE语义ID, 生成式检索先驱</td>
+          <td><span style="color:var(--purple);">学术先驱</span></td>
+          <td>冷启动/泛化能力验证</td>
+          <td>2023年首创</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-p">小红书</span></td>
+          <td>GenRank/NoteLLM + LASER</td>
+          <td>生成式重排 + 长序列全栈优化</td>
+          <td><span style="color:var(--amber);">大规模部署</span></td>
+          <td>Explore Feed A/B提升,LASER arXiv:2602.11562</td>
+          <td>长序列全栈优化</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-y">LinkedIn</span></td>
+          <td>Feed-SR (arXiv:2602.12354)</td>
+          <td>Transformer序列排序，判别式工业落地</td>
+          <td><span style="color:var(--green);">工程稳健</span></td>
+          <td>RoPE/incremental training/late fusion</td>
+          <td>判别式工业标杆</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:0.65em; color:var(--text-muted); margin-top:4px;">
+    <strong>数据来源：</strong>OneRec(arXiv:2502.18965) · HSTU(arXiv:2402.17152,ICML 2024) · Ultra-HSTU(arXiv:2602.16986) · TokenMixer-Large(arXiv:2602.06563) · GRAB(arXiv:2602.01865,百度) · SSR(arXiv:2605.07275,SIGIR 2026)
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 19: 技术演进脉络图 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-19">
+  <div class="section-label">Part 04</div>
+  <h2>技术演进脉络图 2023-2026</h2>
+  <div class="grid" style="grid-template-rows: 7fr 3fr; gap:10px; height:calc(100vh - 180px);">
+    <div class="mermaid-container" id="slide19-mermaid" style="width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
+    <div class="mermaid">
+graph TB
+    %% 2023: Google TIGER
+    G1["（Google）TIGER 2023 RQ-VAE语义ID"] --> K1["（快手）OneRec 2025.2 端到端生成式"]
+    G1 --> T1["（腾讯）OnePiece 2025.9 协作语义ID"]
+
+    %% 2024.2: Meta GR/HSTU
+    M1["（Meta）GR/HSTU 2024.2 ICML 2024,+12.4%"] --> MT1["（美团）MTGR 2025.8 保留交叉特征"]
+    M1 --> GR1["（小红书）GenRank 2025.5 生成式重排"]
+    M1 --> B1["（字节）HLLM 2024 分层LLM"]
+    B1 --> B2["（字节）OneTrans 2025.10 统一Transformer"]
+    B2 --> B3["（字节）RankMixer 2025.7 判别式TokenMixer"]
+    B3 --> B4["（字节）TokenMixer-Large 2026.2 70B/150B,+1.66% orders"]
+    B4 --> B5["（字节）UG-Separation 2026.2 推理-20%"]
+    M1 --> X1["（京东）xLLM 2025.10 推理引擎优化"]
+
+    %% 2026.2: New breakthroughs
+    M2["（Meta）ULTRA-HSTU 2026.2 18层16k,5x训练21x推理"] --> VLM["（Meta）VLM 2026.4 晚实例化数据基础设施"]
+    B4 --> B6["（字节）LLM推荐Scaling Law 2026.2 首个LLM推荐幂律"]
+    K1 -.-> K2["（快手）UniMixer 2026.4 判别式统一架构"]
+    GRAB1["（百度）GRAB 2026.2 序列优先CTR"]
+
+    %% 新增：字节长序列/输入重写/统一主干链
+    B1 --> STCA["（字节）STCA 2025.11 stacked attention"]
+    B1 --> LEMUR["（字节）LEMUR 2025.11 多模态端到端"]
+    STCA --> TRM["（字节）TRM 2026.01 semantic token"]
+    LEMUR --> MSN["（字节）MSN 2026.02 memory稀疏激活"]
+    B2 --> MIXER["（字节）MixFormer 2026.02 统一主干"]
+    B3 --> MRG["（字节）MERGE 2026.01 动态层次化索引"]
+
+    %% 新增：阿里SORT、快手全貌、腾讯GPR/OneRanker
+    K1 -.-> OL["（快手）OneLoc 2025 本地生活"]
+    K1 -.-> OM["（快手）OneMall 2025 电商"]
+    OM -.-> GR4AD["（快手）GR4AD 2025 广告生成"]
+    K2 -.-> PROM["（快手）PROMISE 2025 信息瓶颈"]
+    T1 --> GPR["（腾讯）GPR 2026 广告端到端"]
+    GPR --> ONER["（腾讯）OneRanker 2026 三层矛盾"]
+
+    %% 新增：小红书LASER、LinkedIn Feed-SR、京东OxygenREC
+    LASER["（小红书）LASER 2026 长序列全栈"]
+    FEEDSR["（LinkedIn）Feed-SR 2026 判别式工业"]
+    OXY["（京东）OxygenREC 2025 慢思考快生成"]
+
+    %% Styling
+    style G1 fill:#1e1b4b,stroke:#94a3b8,color:#cbd5e1
+    style M1 fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style M2 fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style K1 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style K2 fill:#022c22,stroke:#fbbf24,color:#fde68a
+    style B1 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style B2 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style B3 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style B4 fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style B5 fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style B6 fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style STCA fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style LEMUR fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style TRM fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MSN fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MIXER fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MRG fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MT1 fill:#022c22,stroke:#fb923c,color:#fed7aa
+    style T1 fill:#022c22,stroke:#f472b6,color:#fbcfe8
+    style GR1 fill:#022c22,stroke:#f472b6,color:#fbcfe8
+    style X1 fill:#022c22,stroke:#a3a3a3,color:#d4d4d4
+    style VLM fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style GRAB1 fill:#022c22,stroke:#86efac,color:#bbf7d0
+    style OL fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style OM fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style GR4AD fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style PROM fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style GPR fill:#4a1d96,stroke:#f472b6,color:#fbcfe8
+    style ONER fill:#4a1d96,stroke:#f472b6,color:#fbcfe8
+    style LASER fill:#022c22,stroke:#f472b6,color:#fbcfe8
+    style FEEDSR fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style OXY fill:#064e3b,stroke:#a3a3a3,color:#d4d4d4
+    </div>
+    </div>
+    <style>
+    #slide19-mermaid { max-height: none !important; overflow: auto !important; }
+    #slide19-mermaid .node foreignObject { overflow: visible !important; display: block !important; }
+    #slide19-mermaid .node foreignObject body { margin: 0 !important; padding: 0 !important; }
+    </style>
+    <div class="grid grid-2" style="gap:10px;">
+      <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
+        <strong style="color:var(--cyan);">语义ID路线</strong><br/>
+        Google TIGER · 快手OneRec · 腾讯OnePiece<br/>
+        受限解码空间 · RQ-Kmeans量化 · 冷启动友好
+      </div>
+      <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
+        <strong style="color:var(--green);">纯生成式Transformer路线</strong><br/>
+        Meta GR/HSTU · ULTRA-HSTU<br/>
+        原子ID as token · NTP loss · 自回归生成
+      </div>
+      <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
+        <strong style="color:var(--amber);">Transformer序列建模+判别式CTR路线</strong><br/>
+        字节TokenMixer-Large · 美团MTGR · 百度GRAB · 快手UniMixer<br/>
+        二分类交叉熵CTR loss · AUC/GAUC评估 · 不是生成式
+      </div>
+      <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em);">
+        <strong style="color:var(--red);">LLM增强路线</strong><br/>
+        字节HLLM · 阿里LUM · 京东xLLM<br/>
+        作为特征增强嵌入现有系统 · 不改变推荐范式
+      </div>
+    </div>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:12px 20px; font-size:0.72em; color:var(--text-secondary); margin-top:6px; padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:6px;">
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #34d399; border-radius:3px; display:inline-block;"></span><span>Transformer判别式CTR（字节/美团/百度）</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#1e1b4b; border:2px solid #a78bfa; border-radius:3px; display:inline-block;"></span><span>纯生成式/大模型Scaling（Meta/字节）</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #fbbf24; border-radius:3px; display:inline-block;"></span><span>快手UniMixer统一架构</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#064e3b; border:2px solid #34d399; border-radius:3px; display:inline-block;"></span><span>语义ID生成式（Google/快手/腾讯）</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#4a1d96; border:2px solid #f472b6; border-radius:3px; display:inline-block;"></span><span>广告端到端生成（腾讯GPR/OneRanker）</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #a3a3a3; border-radius:3px; display:inline-block;"></span><span>推理系统优化（京东）</span></div>
+  </div>
+  <p style="font-size:0.62em; color:var(--text-muted); margin-top:4px;">
+    <strong>核心脉络：</strong>TIGER(2023) → Meta GR/HSTU(2024)开创 → 各厂Follow(2025) → 路线分化(2025.6) → 新突破(2026.2)
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 20: 快手One系列详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-20">
+  <div class="section-label">Kuaishou One Series</div>
+  <h2>快手One系列全景：从激进生成式到务实判别式</h2>
+  <div class="mermaid-container" style="margin-top:10px; width:100%; height:100%; display:flex; justify-content:center; align-items:center;">
+    <div class="mermaid" style="transform:scale(0.55); transform-origin:center center; display:block;">
+graph TD
+    Q["（快手）QARM 2024.11<br/>多模态对齐"] --> O1["（快手）OneRec 2025.2<br/>端到端生成式 · arXiv:2502.18965"]
+    O1 --> O2["（快手）OneRec-V2 2025.8<br/>Lazy Decoder · MFU 62%"]
+    Q --> OL["（快手）OneLoc 2025.3<br/>本地生活推荐"]
+    Q --> OM["（快手）OneMall 2025.5<br/>电商推荐"]
+    OM --> GR4AD["（快手）GR4AD 2025<br/>广告生成式推荐"]
+    O2 -. "技术积累" .-> INF["（快手）INFNet 2025<br/>信息瓶颈序列压缩"]
+    INF -. "演进" .-> PROM["（快手）PROMISE 2026<br/>序列压缩瓶颈"]
+    O2 -. "战略转向" .-> UM["（快手）UniMixer 2026.4<br/>判别式统一架构 · arXiv:2604.00590"]
+    style Q fill:#451a03,stroke:#fbbf24,color:#fde68a
+    style O1 fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style O2 fill:#022c22,stroke:#22d3ee,color:#a5f3fc
+    style OL fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style OM fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style GR4AD fill:#064e3b,stroke:#fb923c,color:#fed7aa
+    style INF fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style PROM fill:#064e3b,stroke:#34d399,color:#6ee7b7
+    style UM fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    </div>
+  </div>
+  <div class="grid grid-4" style="margin-top:12px; gap:10px;">
+    <div class="model-card">
+      <div class="model-name">QARM <span class="badge badge-new">2024.11</span></div>
+      <div class="model-org">快手</div>
+      <div class="model-contrib">多模态对齐：用推荐任务的真实行为pair微调MLLM，解决Representation Unmatching和Unlearning问题。</div>
+    </div>
+    <div class="model-card">
+      <div class="model-name">OneRec <span class="badge badge-new">2025.2</span></div>
+      <div class="model-org">快手</div>
+      <div class="model-contrib">端到端生成式推荐，RQ-Kmeans + Session-wise + IPA对齐。<strong style="color:var(--green);">停留时长+1.24%</strong>，核心指标100%正向。</div>
+    </div>
+    <div class="model-card">
+      <div class="model-name">OneRec-V2 <span class="badge badge-new">2025.8</span></div>
+      <div class="model-org">快手</div>
+      <div class="model-contrib">Lazy Decoder架构：编码资源97.66%→2.34%，计算量↓94%，训练资源↓90%。<strong style="color:var(--green);">MFU 62%</strong>，成功扩展至8B参数。</div>
+    </div>
+    <div class="model-card">
+      <div class="model-name">UniMixer <span class="badge badge-new">2026.4</span></div>
+      <div class="model-org">快手 · 战略转向</div>
+      <div class="model-contrib">判别式Scaling统一架构：统一注意力/TokenMixer/FM三种Scaling块。<strong style="color:var(--purple);">从激进生成式→务实判别式</strong>。</div>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:10px;">
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">战略转变：</strong>快手是"从激进到务实"的典型代表。生成式OneRec验证了端到端可行性，但面对Scaling Law的不确定性和延迟问题，2026年转向判别式UniMixer，保留现有架构享受Scaling红利。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 21: 字节技术链 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-21">
+  <div class="section-label">ByteDance Tech Chain</div>
+  <h2>字节技术链：判别式Scaling最完整布局</h2>
+  <div style="display:flex; flex-direction:column; flex:1; gap:10px; min-height:0;">
+  <div class="mermaid-container" style="flex:1.6; display:flex; justify-content:center; align-items:center;">
+    <div class="mermaid" style="transform:scale(1); transform-origin:center center; display:block;">
+graph TD
+    HL["（字节）HLLM 2024<br/>分层LLM"] --> OT["（字节）OneTrans 2025.10<br/>统一Transformer · arXiv:2510.26104 · WWW 2026"]
+    OT --> RM["（字节）RankMixer 2025.7<br/>Token Mixing · CIKM 2025"]
+    RM --> TML["（字节）TokenMixer-Large 2026.2<br/>70B/150B · arXiv:2602.06563"]
+    TML --> UGS["（字节）UG-Separation 2026.2<br/>推理延迟-20% · arXiv:2602.10455"]
+    OT -. "并行" .-> LLM_S["（字节）LLM推荐Scaling Law 2026.2<br/>首个幂律 · arXiv:2602.07298"]
+    HL --> STCA["（字节）STCA 2025.11<br/>stacked attention/request级batching"]
+    STCA --> TRM["（字节）TRM 2026.01<br/>semantic token破解scaling瓶颈"]
+    HL --> LEMUR["（字节）LEMUR 2025.11<br/>多模态端到端+memory bank"]
+    LEMUR --> MSN["（字节）MSN 2026.02<br/>memory稀疏激活·检索式注入"]
+    OT --> MIXER["（字节）MixFormer 2026.02<br/>sequence/dense co-scaling"]
+    RM --> MRG["（字节）MERGE 2026.01<br/>动态层次化索引"]
+    RM --> MDL["（字节）MDL 2026<br/>特征/场景/任务统一建模"]
+    style HL fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style OT fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style RM fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style TML fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style UGS fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style LLM_S fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
+    style STCA fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style TRM fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style LEMUR fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MSN fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MIXER fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MRG fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    style MDL fill:#064e3b,stroke:#22d3ee,color:#a5f3fc
+    </div>
+  </div>
+  </div>
+  <div class="grid grid-3" style="margin-top:0; gap:10px;">
+    <div class="card card-c">
+      <h4>RankMixer <span class="badge badge-upd">CIKM 2025</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">用Token-Mixing替代全连接层，保持判别式建模但架构升级。Token Mixing+MoE稀疏激活，4.5%→45% MFU提升。</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">抖音主Feed全量上线，多业务显著提升</div>
+    </div>
+    <div class="card card-g">
+      <h4>TokenMixer-Large <span class="badge badge-new">NEW 2026.2</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">70B/150B参数，Mixing-and-Reverting操作 + Sparse Per-token MoE。<strong style="color:var(--green);">订单+1.66%, 广告ADSS+2.0%, 直播+1.4%</strong>。</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">arXiv:2602.06563 · 层间残差连接解决梯度消失</div>
+    </div>
+    <div class="card card-v">
+      <h4>UG-Separation <span class="badge badge-new">NEW 2026.2</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">User-Group分离优化推理，TokenMixer用户侧计算复用。<strong style="color:var(--cyan);">推理延迟-20%</strong>，W8A16量化。</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">arXiv:2602.10455 · TokenMixer-Large配套优化</div>
+    </div>
+    <div class="card card-v">
+      <h4>STCA → TRM <span class="badge badge-new">NEW</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">STCA: stacked attention + request级batching低复杂度<br/>TRM: semantic token破解scaling瓶颈，"Farewell to Item IDs"</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">长序列工业化路线</div>
+    </div>
+    <div class="card card-v">
+      <h4>LEMUR → MSN <span class="badge badge-new">NEW</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">LEMUR: 多模态端到端训练 + memory bank控制编码成本<br/>MSN: memory-based稀疏激活，检索式注入个性化参数</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">多模态 + 个性化参数</div>
+    </div>
+    <div class="card card-v">
+      <h4>MixFormer → MDL <span class="badge badge-new">NEW</span></h4>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">MixFormer: sequence/dense co-scaling统一主干协同扩展<br/>MDL: 特征/场景/任务统一建模</p>
+      <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">统一主干路线</div>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:10px;">
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">字节策略：</strong>判别式Scaling优先，全程无激进生成式押注。技术链完整（LLM压缩→TokenMixer→UG-Separation），低延迟高可控，为未来端到端奠定基础。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 22: 其他公司研究路径 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-22">
+  <div class="section-label">Other Companies' Research Tracks</div>
+  <h2>其他公司研究路径与动态 2025-2026</h2>
+  <div class="grid grid-3" style="margin-top:12px; gap:12px;">
+    <div>
+      <h4>阿里：显式稀疏性 + SORT判别式另一条路</h4>
+      <div class="paper-ref" style="margin-top:8px;">
+        <div class="title">SSR: Beyond Dense Connectivity — Explicit Sparsity for Scalable Recommendation</div>
+        <div class="meta">阿里 · SIGIR 2026 · arXiv:2605.07275</div>
+        <div class="abstract">发现Dense MLP存在隐式稀疏但无法释放Scaling潜力。显式稀疏性设计，突破传统MLP的参数量天花板。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">SORT: Search-Oriented Transformer in Practice</div>
+        <div class="meta">阿里 · arXiv:2603.03988 · 2026</div>
+        <div class="abstract"><strong style="color:var(--purple);">判别式另一条路：</strong>request-centric sample organization + local attention + query pruning + generative pre-training。系统性改造Transformer，验证判别式backbone仍存在明确进化空间。</div>
+      </div>
+      <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--purple);">SIGIR 2026</div>
+          <div class="stat-label">顶会收录</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--cyan);">判别式</div>
+          <div class="stat-label">另一条路</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h4>美团：深耕生成式GR多篇论文</h4>
+      <div class="paper-ref" style="margin-top:8px;">
+        <div class="title">MTGR: Industrial-Scale Generative Recommendation Framework in Meituan</div>
+        <div class="meta">美团 · arXiv:2505.18654 · 2025.8</div>
+        <div class="abstract">保留DLRM交叉特征（区别于Meta HSTU），Group-Layer Normalization统一异构特征空间。<strong style="color:var(--green);">65x FLOPs提升</strong>。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">SUAN / HoMer / EGA-V2</div>
+        <div class="meta">美团 · 2025 连续发布</div>
+        <div class="abstract">序列建模(SUAN)、层级记忆(HoMer)、端到端生成广告(EGA-V2)，多篇论文密集积累，技术路线深耕。</div>
+      </div>
+      <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--green);">65×</div>
+          <div class="stat-label">FLOPs提升</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--amber);">多篇</div>
+          <div class="stat-label">论文积累</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h4>腾讯/Shopee：上下文工程 → 广告深融合</h4>
+      <div class="paper-ref" style="margin-top:8px;">
+        <div class="title">OnePiece: Bringing Context Engineering to Cascade Ranking</div>
+        <div class="meta">腾讯/Shopee · arXiv:2509.18091 · 2025.9</div>
+        <div class="abstract">LLM式上下文工程注入推荐，Block-wise隐式推理。<strong style="color:var(--green);">Shopee主搜索GMV+2%/UU, 广告+2.90%</strong>。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">GPR / OneRanker 2026: 广告one-model深融合</div>
+        <div class="meta">腾讯/Shopee · 2026</div>
+        <div class="abstract">GPR: 端到端生成广告，统一输入schema + 多级semantic ID<br/>OneRanker: 处理三层深层矛盾（兴趣vs商业、target awareness、生成vs排序信息断裂）</div>
+      </div>
+      <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--green);">+2%</div>
+          <div class="stat-label">GMV/UU</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--green);">+2.9%</div>
+          <div class="stat-label">广告收入</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" style="color:var(--purple);">三层</div>
+          <div class="stat-label">深层矛盾</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grid grid-2" style="margin-top:12px; gap:12px;">
+    <div>
+      <h4>百度/Google/小红书特色路线</h4>
+      <div class="paper-ref" style="margin-top:8px;">
+        <div class="title">GRAB: An LLM-Inspired Sequence-First CTR Prediction Paradigm</div>
+        <div class="meta">百度 · arXiv:2602.01865 · 2026.2</div>
+        <div class="abstract">CamA多通道注意力机制 + STS (Sequence-Then-Sparse) 训练策略。<strong style="color:var(--green);">CTR+3.49%, 收入+3.05%</strong>。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">LASER: 长序列全栈优化 (arXiv:2602.11562)</div>
+        <div class="meta">小红书 · 2026</div>
+        <div class="abstract">长序列I/O访问与target-aware segmented attention结合，代表长序列全栈优化路线。</div>
+      </div>
+      <div style="margin-top:6px;">
+        <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted); margin-bottom:4px;">核心技术：</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.0em); color:var(--text-secondary);">
+          <span class="tag tag-c" style="margin-bottom:4px;">CamA注意力</span>
+          <span class="tag tag-v" style="margin-bottom:4px;">STS训练策略</span>
+          <span class="tag tag-g" style="margin-bottom:4px;">长序列全栈</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h4>海外大厂 + 京东特色路线</h4>
+      <div class="paper-ref" style="margin-top:8px;">
+        <div class="title">Feed-SR: Transformer序列排序工业落地 (arXiv:2602.12354)</div>
+        <div class="meta">LinkedIn · 2026</div>
+        <div class="abstract">RoPE + incremental training + recency weighting + late fusion。说明海外大厂在feed ranking中依然高度重视判别式sequential ranking。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">Foundation-Expert: 平台级中心模型+轻专家 (arXiv:2508.02929)</div>
+        <div class="meta">Meta · 2025</div>
+        <div class="abstract">平台级组织方式：中心foundation model + 轻量surface-specific experts。跨surface/跨模态/长期流数据的中心模型。</div>
+      </div>
+      <div class="paper-ref" style="margin-top:6px;">
+        <div class="title">OxygenREC: 慢思考快生成 (arXiv:2512.22386)</div>
+        <div class="meta">京东 · 2025</div>
+        <div class="abstract">instruction-following引入电商推荐。"慢思考": 近线LLM生成Contextual Reasoning Instructions；"快生成": 线上高吞吐encoder-decoder实时解码。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 23: 知乎社区讨论精华 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-23">
+  <div class="section-label">Zhihu Discussion</div>
+  <h2>知乎讨论精华：正反方代表性观点</h2>
+  <div style="margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="card card-r">
+      <h4 style="color:var(--red);">⚠️ 质疑派核心论据</h4>
+      <div style="font-size:0.82em; margin-top:8px; line-height:1.6;">
+        <p><strong>马进（腾讯）</strong>："推荐大模型（判别式Scaling）可能比纯生成式更work...至少到目前为止，头部大厂的主场景，推荐大模型都是百分位的lt收益，而某些生成式推荐，摊手。"</p>
+        <p style="margin-top:6px;"><strong>陈东文</strong>："生成式推荐是一个企业中层为搏眼球攒项目的工具...没有ground truth，是最大的问题。"</p>
+        <p style="margin-top:6px;"><strong>BUGs</strong>："同等数据和算力规模下，谁通过生成式范式大幅提点了？生成式不是关键，Scaling Law才是。"</p>
+        <p style="margin-top:6px;"><strong>几野</strong>："字节早期以判别式Scaling为主，但OneTrans/TRM等生成式组件也在推进；快手转UniMixer(判别式)，阿里无公开工作，腾讯换赛道。"</p>
+        <p style="margin-top:6px;"><strong>KiraYeetar</strong>："投入产出比说服不了leader干这事儿...资源一般的组还可以再观望一下。"</p>
+      </div>
+    </div>
+    <div class="card card-g">
+      <h4 style="color:var(--green);">💡 看好派核心论据</h4>
+      <div style="font-size:0.82em; margin-top:8px; line-height:1.6;">
+        <p><strong>傅聪Cong（OnePiece发明者）</strong>："生成式推荐不是伪范式，而是未来，这是因为传统推荐范式无法具备scaling law。"</p>
+        <p style="margin-top:6px;"><strong>青荇无言</strong>："底层逻辑从'匹配'转向'生成-推理'...当算力成本继续下降，这种'压缩即性能'的路线会进一步放大优势。"</p>
+        <p style="margin-top:6px;"><strong>九河之间</strong>："字节RankMixer在判别式精排模型上实现了Scaling Law——'极致进化'而非'范式革命'。当前判别式仍是基石，生成式是前沿探索。"</p>
+        <p style="margin-top:6px;"><strong>Xavier</strong>："重要的不是目前已有的生成式方法孰优孰劣，而是在头部搜广推业务里，模型、数据规模见顶的情况下，到底下一步应该怎么走。"</p>
+        <p style="margin-top:6px;"><strong>王喆</strong>："生成式推荐的价值在于突破协同过滤的信息茧房，世界知识注入是核心优势。"</p>
+      </div>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:10px; font-size:clamp(0.88em,1.05vw,1.15em);">
+    <p><strong class="a">讨论焦点总结：</strong>知乎讨论围绕两个核心问题：<strong>①是否具备Scaling Law</strong>（决定天花板高度）和<strong>②ROI是否为正</strong>（决定工程落地价值）。三方观点：<strong style="color:var(--green);">快手转向UniMixer（判别式）</strong>、<strong style="color:var(--cyan);">字节判别式Scaling为主+生成式组件并行探索</strong>、<strong style="color:var(--amber);">Meta ULTRA-HSTU持续深耕生成式</strong>；以及<strong style="color:var(--purple);">工程务实派</strong>（不关心范式，只关心混合架构和推理效率能否落地）。</p>
+    <p style="margin-top:8px;"><strong class="a">核心共识：</strong>生成式推荐的价值在于<span style="color:var(--green);">增强召回</span>和<span style="color:var(--cyan);">广告端到端生成</span>双轨并行。快手OneRec/字节RankMixer验证可行性，渐进融合是现实路径，端到端生成已在广告场景加速落地。</p>
+    <p style="margin-top:6px; color:var(--text-secondary);"><strong class="a">技术路线分化（2025.6后）：</strong><span style="color:var(--amber);">生成式路线</span> Meta ULTRA-HSTU持续深耕（18层16k序列、AT/MoT动态拓扑、混合精度）vs <span style="color:var(--cyan);">判别式Scaling路线</span> 字节TokenMixer-Large主导（70B/150B参数、UG-Separation推理-20%）。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 23: 工业落地分级 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-24">
+  <div class="section-label">Industry Assessment</div>
+  <h2>工业落地分级评估 2026</h2>
+  <div style="margin-top:10px; overflow-x:auto;">
+<table style="font-size:clamp(0.82em,0.95vw,1.1em);">
+      <thead>
+        <tr><th style="width:18%;">落地层级</th><th style="width:27%;">代表工作</th><th style="width:20%;">实际效果</th><th style="width:35%;">专家评估</th></tr>
+      </thead>
+      <tbody>
+        <tr style="background:rgba(52,211,153,0.04);">
+          <td><span class="tag tag-g">已上线验证</span></td>
+          <td>快手OneRec, Meta GR, 字节RankMixer</td>
+          <td>停留时长+0.5~1.2%, 订单+1.66%</td>
+          <td>GuoXun、王喆等认可</td>
+        </tr>
+        <tr style="background:rgba(34,211,238,0.04);">
+          <td><span class="tag tag-c">积极推进中</span></td>
+          <td>字节TokenMixer-Large, Meta ULTRA-HSTU, 美团MTGR</td>
+          <td>70B/150B参数Scaling，推理-20%；MTGR实为判别式CTR精排（论文用AUC评估，非生成式）</td>
+          <td>walsonyang等支持</td>
+        </tr>
+        <tr style="background:rgba(167,139,250,0.04);">
+          <td><span class="tag tag-v">研究跟进中</span></td>
+          <td>阿里SSR, 百度GRAB</td>
+          <td>学术验证，规模落地待验证</td>
+          <td>理论突破，成本待优化</td>
+        </tr>
+        <tr style="background:rgba(248,113,113,0.04);">
+          <td><span class="tag tag-r">存疑观望</span></td>
+          <td>端到端纯生成式召回</td>
+          <td>收益不稳定，Ground Truth缺失</td>
+          <td>陈东文、马进等质疑</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="highlight-box" style="margin-top:12px;">
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(SSR SIGIR 2026) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证)</p>
+    <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式OneRec转向判别式UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU。</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 24: 五大业界共识 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-25">
+  <div class="section-label">Industry Consensus 2026</div>
+  <h2>五大业界共识 2025-2026</h2>
+  <div style="margin-top:12px;">
+    <div class="toc-item" style="margin-bottom:10px;">
+      <div style="background:rgba(34,211,238,0.15); color:var(--cyan); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">1</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">语义token升级为系统级接口</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">Item从原子化ID演化为可组合、可迁移、可生成、可索引的token序列；semantic token正在成为推荐系统新的基础接口</span></div>
+    </div>
+    <div class="toc-item" style="margin-bottom:10px;">
+      <div style="background:rgba(167,139,250,0.15); color:var(--purple); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">2</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">统一化从特征走向平台</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">OneTrans/MixFormer/MDL/MTFM/OneMall/OxygenREC：统一特征类型、场景分布、任务目标、训练与部署接口</span></div>
+    </div>
+    <div class="toc-item" style="margin-bottom:10px;">
+      <div style="background:rgba(52,211,153,0.15); color:var(--green); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">3</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">推理serving和复用成一等公民</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">UG-Separation/LASER/GR4AD/PROMISE：inference-time scaling、beam设计、path-level reward、用户侧计算复用——不能转化为在线计算图的论文创新不构成真正的工业创新</span></div>
+    </div>
+    <div class="toc-item" style="margin-bottom:10px;">
+      <div style="background:rgba(251,191,36,0.15); color:var(--amber); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">4</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">生成式one-model在广告/电商加速落地</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">美团EGA-V2/快手GR4AD/腾讯GPR/OneRanker：广告天然面临多目标+页面级生成+value alignment，与生成式框架天然契合，端到端生成已在广告场景率先突破</span></div>
+    </div>
+    <div class="toc-item">
+      <div style="background:rgba(248,113,113,0.15); color:var(--red); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">5</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">判别式大ranking backbone进入成熟期</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">RankMixer/TokenMixer-Large/UG-Separation/SORT/Feed-SR/MTFM：判别式ranker并未迅速失去演进空间，而是更像foundation model——更统一token接口、更深一体化主干、更明确scaling目标</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 25: Part 6 行动建议 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-26">
+  <div class="section-label">Part 06 · 昇腾推荐团队</div>
+  <h2>昇腾推荐团队行动建议</h2>
+  <div class="highlight-box" style="margin-top:10px;">
+    <p style="font-size: 2.0em;"><strong>昇腾推荐团队的核心定位：</strong>支撑互联网客户从GPU平台迁移到昇腾平台，或在昇腾平台原生开发新一代推荐模型。生成式推荐的技术浪潮为昇腾提供了差异化窗口期。</p>
+  </div>
+  <div class="grid grid-3" style="margin-top:14px; gap:12px;">
+    <div class="card card-c">
+      <div style="font-size:1.4em; margin-bottom:8px;">🔄</div>
+      <h3 style="color:var(--cyan);">迁移支撑（根基）</h3>
+      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">PyTorch API兼容、FBGEMM/HKV算子对齐、迁移工具链</p>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>立即启动</div>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--green);"><strong>优先级：</strong>P0</div>
+    </div>
+    <div class="card card-v">
+      <div style="font-size:1.4em; margin-bottom:8px;">🛠️</div>
+      <h3 style="color:var(--purple);">原生开发（差异化）</h3>
+      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">TorchRec-V2生成式框架、Recsys-GR完整适配、训推一体</p>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>2026 Q3-Q4</div>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--amber);"><strong>优先级：</strong>P1</div>
+    </div>
+    <div class="card card-g">
+      <div style="font-size:1.4em; margin-bottom:8px;">📡</div>
+      <h3 style="color:var(--green);">生态跟进（与时俱进）</h3>
+      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">PyTorch版本同步、arXiv新论文1个月适配、Benchmark建设</p>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>持续跟进</div>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--amber);"><strong>优先级：</strong>P2</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 26: 行动优先级矩阵 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-27">
+  <div class="section-label">Ascend Priority Matrix</div>
+  <h2>昇腾推荐团队行动优先级矩阵</h2>
+  <div style="margin-top:10px; overflow-x:auto;">
+<table style="font-size:clamp(0.82em,0.95vw,1.1em);">
+      <thead>
+        <tr><th style="width:30%;">行动项</th><th style="width:15%;">优先级</th><th style="width:25%;">预期收益</th><th style="width:30%;">建议</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>PyTorch API兼容度提升至95%+</td>
+          <td><span class="tag tag-g">P0 立即</span></td>
+          <td>客户代码零改动迁移</td>
+          <td>消除迁移阻断项，建立透明替换接口</td>
+        </tr>
+        <tr>
+          <td>FBGEMM/HKV算子性能对标NVIDIA</td>
+          <td><span class="tag tag-g">P0 立即</span></td>
+          <td>Sparse Embedding性能不输GPU</td>
+          <td>推荐模型最大瓶颈，昇腾差异化竞争点</td>
+        </tr>
+        <tr>
+          <td>Recsys-GR（Meta GR/HSTU）完整适配</td>
+          <td><span class="tag tag-c">P1 Q3</span></td>
+          <td>生成式推荐训练完整支撑</td>
+          <td>3个月内完成HSTU融合算子实现</td>
+        </tr>
+        <tr>
+          <td>Ascend-RecBench独立代码仓建设</td>
+          <td><span class="tag tag-c">P1 Q3</span></td>
+          <td>客户决策支撑，销售武器</td>
+          <td>扩充模型至60+，自动化HTML报告</td>
+        </tr>
+        <tr>
+          <td>Ascend-RecServe推理框架整合</td>
+          <td><span class="tag tag-v">P2 Q4</span></td>
+          <td>推理延迟降低20%+</td>
+          <td>整合vLLM-ascend + AOTI + 动态Batch</td>
+        </tr>
+        <tr>
+          <td>前沿模型快速适配通道</td>
+          <td><span class="tag tag-a">P3 探索</span></td>
+          <td>arXiv论文1个月内完成算子需求分析</td>
+          <td>建立快速跟进机制不掉队</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 27: 昇腾生态资产改造清单 -->
+<div class="slide" id="slide-28">
+  <div class="section-label">Ascend Ecosystem</div>
+  <h2>昇腾推荐开发生态现状与改进重点</h2>
+  <div style="margin-top:10px; overflow-x:auto;">
+<table style="font-size:clamp(0.82em,0.95vw,1.1em);">
+      <thead>
+        <tr><th style="width:25%;">生态组件</th><th style="width:30%;">当前状态</th><th style="width:45%;">改进重点</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-c">torch_npu</span></td>
+          <td>约85% API兼容，动态Shape部分支持</td>
+          <td>提升至95%+，补充PyTorch新版本API，禁用JIT编译开销</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-v">RecSDK算子库</span></td>
+          <td>30+ Ascend C算子（hstu/token_mixing/ln_mul）</td>
+          <td>FBGEMM/HKV性能对标CUTLASS，HSTUAttention完整实现</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-g">TorchRec-V2</span></td>
+          <td>生成式推荐框架基础样例可用</td>
+          <td>Recsys-GR完整适配，支持16K+序列，端到端生成推理</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-a">vLLM-ascend</span></td>
+          <td>2.2k stars，持续同步vLLM最新版本</td>
+          <td>整合为RecServe核心后端，PagedAttention昇腾实现</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-r">AOTI编译</span></td>
+          <td>基础可用，文档较少</td>
+          <td>提升文档覆盖，BF16/FP8/INT4混合精度，内存优化</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 32: Q&A -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-33">
+  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center;">
+    <div style="font-size:5em; margin-bottom:20px;">❓</div>
+    <h1 style="font-size:clamp(2em,3vw,3.5em); margin-bottom:20px;">Q & A</h1>
+    <p style="color:var(--text-secondary); font-size:clamp(1em,1.5vw,1.4em); line-height:2;">感谢聆听<br/>欢迎提问与讨论</p>
+    <div style="margin-top:32px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+      <span class="tag tag-c">推荐算法</span>
+      <span class="tag tag-v">生成式AI</span>
+      <span class="tag tag-g">范式转变</span>
+      <span class="tag tag-a">Ultra-HSTU</span>
+      <span class="tag tag-r">TokenMixer-Large</span>
+    </div>
+  </div>
+</div>
+
+<!-- 导航 -->
+<div class="nav">
+  <button onclick="prev()" title="上一页">◀</button>
+  <button id="pageIndicator" style="min-width:80px;">1 / 34</button>
+  <button onclick="next()" title="下一页">▶</button>
+  <div class="divider"></div>
+  <button onclick="toggleFullscreen()" title="全屏">⛶</button>
+  <button onclick="goStart()" title="首页">⏮</button>
+  <button onclick="goEnd()" title="末页">⏭</button>
+</div>
+
+<script>
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1e293b',
+    primaryTextColor: '#f1f5f9',
+    primaryBorderColor: '#22d3ee',
+    lineColor: '#475569',
+    secondaryColor: '#0f172a',
+    tertiaryColor: '#020617',
+    background: '#0f172a',
+    mainBkg: '#1e293b',
+    textColor: '#f1f5f9',
+    fontSize: '11px'
+  },
+  flowchart: {
+    curve: 'basis',
+    htmlLabels: true,
+    padding: 8,
+    nodeSpacing: 20,
+    rankSpacing: 40
+  },
+  sequence: { showSequenceNumbers: false }
+});
+
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+const progress = document.getElementById('progress');
+const indicator = document.getElementById('pageIndicator');
+
+function update() {
+  slides.forEach((s, i) => s.classList.toggle('active', i === current));
+  progress.style.width = ((current + 1) / total * 100) + '%';
+  indicator.textContent = (current + 1) + ' / ' + total;
+  // Re-render mermaid diagrams in the newly active slide
+  const activeSlide = slides[current];
+  if (activeSlide) {
+    const mermaids = activeSlide.querySelectorAll('.mermaid');
+    mermaids.forEach((m, idx) => {
+      const src = m.dataset.definition || m.dataset.source || m.textContent.trim();
+      const svgId = 'mermaid-svg-' + current + '-' + idx;
+      mermaid.render(svgId, src).then(svg => {
+        m.innerHTML = svg.svg;
+        // CSS handles all styling - just ensure SVG fills container
+        m.querySelectorAll('svg').forEach(svgEl => {
+          svgEl.style.width = '100%';
+          svgEl.style.height = 'auto';
+        });
+      }).catch(err => {
+        console.error('[mermaid render error]', err.message, '| slide', current, '| source:', src.substring(0, 80));
+        m.innerHTML = '<pre style="color:#f87171;font-size:12px;overflow:auto;">[mermaid error]\n' + err.message + '\n\nSource:\n' + src.substring(0, 200) + '</pre>';
+      });
+    });
+  }
+}
+
+function next() { current = Math.min(current + 1, total - 1); update(); }
+function prev() { current = Math.max(current - 1, 0); update(); }
+function goStart() { current = 0; update(); }
+function goEnd() { current = total - 1; update(); }
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
+  else if (e.key === 'Home') goStart();
+  else if (e.key === 'End') goEnd();
+  else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+  else if (e.key === ' ') { e.preventDefault(); next(); }
+});
+
+// Initial render with proper error logging
+document.querySelectorAll('.mermaid').forEach((m, i) => {
+  const src = m.dataset.definition || m.textContent.trim();
+  m.dataset.source = src; // Store original source
+  mermaid.render('mermaid-init-' + i, src).then(svg => {
+    m.innerHTML = svg.svg;
+    // CSS handles all styling - just ensure SVG fills container
+    m.querySelectorAll('svg').forEach(svgEl => {
+      svgEl.style.width = '100%';
+      svgEl.style.height = 'auto';
+    });
+  }).catch(err => {
+    console.error('[mermaid init error]', err.message, '| index', i, '| source:', src.substring(0, 80));
+    m.innerHTML = '<pre style="color:#f87171;font-size:12px;overflow:auto;">[mermaid error]\n' + err.message + '\n\nSource:\n' + src.substring(0, 200) + '</pre>';
+  });
+});
+
+</script>
+</body>
+</html>

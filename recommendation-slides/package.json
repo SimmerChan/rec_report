@@ -1,0 +1,14 @@
+{
+  "name": "recommendation-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build",
+    "preview": "slidev preview"
+  },
+  "dependencies": {
+    "@slidev/cli": "^52.15.2",
+    "vite": "^6.4.2"
+  }
+}
