@@ -109,7 +109,7 @@ Meta GR是生成式开山之作，1.5万亿参数，CTR提升12.4%，NDCG提升6
 
 Meta Ultra-HSTU是稀疏注意力极致优化，2026年2月发布，半局部注意力SLA加动态拓扑，生产环境消费提升4%、互动提升8%。
 
-字节TokenMixer-Large是判别式Scaling代表，70亿到150亿参数，Mixing-and-Reverting操作解决梯度消失，电商订单提升1.66%、广告ADSS提升2.0%。
+字节TokenMixer-Large是判别式Scaling代表，7亿到15亿参数，Mixing-and-Reverting操作解决梯度消失，电商订单提升1.66%、广告ADSS提升2.0%。
 
 ---
 

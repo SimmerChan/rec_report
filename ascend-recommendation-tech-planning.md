@@ -36,7 +36,7 @@
 
 | 技术趋势 | 对昇腾团队的影响 | 时间窗口 |
 |---------|----------------|---------|
-| **判别式Scaling路线主导**（字节TokenMixer-Large/快手UniMixer）| 70B+参数大模型训练→需要大算力集群，昇腾替代GPU窗口期 | 当前~2027 |
+| **判别式Scaling路线主导**（字节TokenMixer-Large/快手UniMixer）| 7B+参数大模型训练→需要大算力集群，昇腾替代GPU窗口期 | 当前~2027 |
 | **生成式GR路线深耕**（Meta ULTRA-HSTU）| 自定义attention+超长序列→需要昇腾NPU专用算子支持 | 2026~2028 |
 | **广告端到端生成突破**（美团EGA-V2）| 生成式广告模型→new computation pattern，昇腾需提前适配 | 2026~2027 |
 | **推理serving成一等公民**（字节UG-Separation）| 推理优化→NPU推理加速库需求激增 | 当前~2027 |
@@ -203,7 +203,7 @@
 
 | 工作项 | 目标 | 关键指标 |
 |--------|------|---------|
-| FSDP on 昇腾 | 支持70B+参数模型在昇腾上的分布式训练 | 千卡集群训练MFU达到40%+ |
+| FSDP on 昇腾 | 支持7B+参数模型在昇腾上的分布式训练 | 千卡集群训练MFU达到40%+ |
 | 梯度同步优化 | HCCL通信效率提升 | 多机多卡训练线性加速比达到85%+ |
 | 断点续训 | 支持超大规模训练的故障恢复 | 故障后训练恢复时间<30分钟 |
 
@@ -229,7 +229,7 @@
 
 | 工作项 | 目标 | 说明 |
 |--------|------|------|
-| **TokenMixer-Large适配** | 支撑70B/150B参数判别式大模型在昇腾上的训练 | 字节TokenMixer-Large已验证这条路线的有效性 |
+| **TokenMixer-Large适配** | 支撑7B/15B参数判别式大模型在昇腾上的训练 | 字节TokenMixer-Large已验证这条路线的有效性 |
 | **MoE稀疏激活优化** | topK gating等操作在昇腾上的性能优化 | MoE是控制计算量的关键 |
 | **UG-Separation推理适配** | 支撑字节UG-Separation的推理优化（用户组分离） | 字节的推理优化方案 |
 | **混合精度精细化** | BF16+FP8+INT4混合精度，内存优化 | ULTRA-HSTU已用混合精度将内存从7GB→2.3GB/层 |
@@ -340,7 +340,7 @@
 
 | 主线 | 代表工作 | 核心命题 | 昇腾支撑需求 |
 |------|---------|---------|-------------|
-| **大Ranking Backbone可扩展化** | RankMixer→TokenMixer-Large→MSN→UG-Separation | 70B+参数判别式模型训练与Serving | FSDP、混合精度、MoE优化、推理复用 |
+| **大Ranking Backbone可扩展化** | RankMixer→TokenMixer-Large→MSN→UG-Separation | 7B+参数判别式模型训练与Serving | FSDP、混合精度、MoE优化、推理复用 |
 | **长序列建模工业化** | STCA→LEMUR→LASER→LONGER | 16K+序列如何训、推、存 | 超长序列算子、变长batch优化 |
 | **统一Backbone** | OneTrans→MixFormer→MDL→MTFM | 多模块统一为更少更强的主干 | 统一算子库、灵活算子融合 |
 | **Semantic Token与生成式One-Model** | OneRec→GR4AD→GPR→OneRanker→OxygenREC | 端到端生成式推荐+广告 | 生成式解码、beam search、Semantic ID |

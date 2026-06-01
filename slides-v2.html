@@ -1926,7 +1926,7 @@ graph TB
     M1 --> B1["（字节）HLLM 2024 分层LLM"]
     B1 --> B2["（字节）OneTrans 2025.10 统一Transformer"]
     B2 --> B3["（字节）RankMixer 2025.7 判别式TokenMixer"]
-    B3 --> B4["（字节）TokenMixer-Large 2026.2 70B/150B,+1.66% orders"]
+    B3 --> B4["（字节）TokenMixer-Large 2026.2 7B/15B,+1.66% orders"]
     B4 --> B5["（字节）UG-Separation 2026.2 推理-20%"]
     M1 --> X1["（京东）xLLM 2025.10 推理引擎优化"]
 
@@ -2100,7 +2100,7 @@ graph TD
 graph TD
     HL["（字节）HLLM 2024<br/>分层LLM"] --> OT["（字节）OneTrans 2025.10<br/>统一Transformer · arXiv:2510.26104 · WWW 2026"]
     OT --> RM["（字节）RankMixer 2025.7<br/>Token Mixing · CIKM 2025"]
-    RM --> TML["（字节）TokenMixer-Large 2026.2<br/>70B/150B · arXiv:2602.06563"]
+    RM --> TML["（字节）TokenMixer-Large 2026.2<br/>7B/15B · arXiv:2602.06563"]
     TML --> UGS["（字节）UG-Separation 2026.2<br/>推理延迟-20% · arXiv:2602.10455"]
     OT -. "并行" .-> LLM_S["（字节）LLM推荐Scaling Law 2026.2<br/>首个幂律 · arXiv:2602.07298"]
     HL --> STCA["（字节）STCA 2025.11<br/>stacked attention/request级batching"]
@@ -2134,7 +2134,7 @@ graph TD
     </div>
     <div class="card card-g">
       <h4>TokenMixer-Large <span class="badge badge-new">NEW 2026.2</span></h4>
-      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">70B/150B参数，Mixing-and-Reverting操作 + Sparse Per-token MoE。<strong style="color:var(--green);">订单+1.66%, 广告ADSS+2.0%, 直播+1.4%</strong>。</p>
+      <p style="font-size:clamp(0.82em,0.95vw,1.0em);">7B/15B参数，Mixing-and-Reverting操作 + Sparse Per-token MoE。<strong style="color:var(--green);">订单+1.66%, 广告ADSS+2.0%, 直播+1.4%</strong>。</p>
       <div style="margin-top:6px; font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted);">arXiv:2602.06563 · 层间残差连接解决梯度消失</div>
     </div>
     <div class="card card-v">
@@ -2318,7 +2318,7 @@ graph TD
   <div class="highlight-box" style="margin-top:10px; font-size:clamp(0.88em,1.05vw,1.15em);">
     <p><strong class="a">讨论焦点总结：</strong>知乎讨论围绕两个核心问题：<strong>①是否具备Scaling Law</strong>（决定天花板高度）和<strong>②ROI是否为正</strong>（决定工程落地价值）。三方观点：<strong style="color:var(--green);">快手转向UniMixer（判别式）</strong>、<strong style="color:var(--cyan);">字节判别式Scaling为主+生成式组件并行探索</strong>、<strong style="color:var(--amber);">Meta ULTRA-HSTU持续深耕生成式</strong>；以及<strong style="color:var(--purple);">工程务实派</strong>（不关心范式，只关心混合架构和推理效率能否落地）。</p>
     <p style="margin-top:8px;"><strong class="a">核心共识：</strong>生成式推荐的价值在于<span style="color:var(--green);">增强召回</span>和<span style="color:var(--cyan);">广告端到端生成</span>双轨并行。快手OneRec/字节RankMixer验证可行性，渐进融合是现实路径，端到端生成已在广告场景加速落地。</p>
-    <p style="margin-top:6px; color:var(--text-secondary);"><strong class="a">技术路线分化（2025.6后）：</strong><span style="color:var(--amber);">生成式路线</span> Meta ULTRA-HSTU持续深耕（18层16k序列、AT/MoT动态拓扑、混合精度）vs <span style="color:var(--cyan);">判别式Scaling路线</span> 字节TokenMixer-Large主导（70B/150B参数、UG-Separation推理-20%）。</p>
+    <p style="margin-top:6px; color:var(--text-secondary);"><strong class="a">技术路线分化（2025.6后）：</strong><span style="color:var(--amber);">生成式路线</span> Meta ULTRA-HSTU持续深耕（18层16k序列、AT/MoT动态拓扑、混合精度）vs <span style="color:var(--cyan);">判别式Scaling路线</span> 字节TokenMixer-Large主导（7B/15B参数、UG-Separation推理-20%）。</p>
   </div>
 </div>
 
@@ -2343,7 +2343,7 @@ graph TD
         <tr style="background:rgba(34,211,238,0.04);">
           <td><span class="tag tag-c">积极推进中</span></td>
           <td>字节TokenMixer-Large, Meta ULTRA-HSTU, 美团MTGR</td>
-          <td>70B/150B参数Scaling，推理-20%；MTGR实为判别式CTR精排（论文用AUC评估，非生成式）</td>
+          <td>7B/15B参数Scaling，推理-20%；MTGR实为判别式CTR精排（论文用AUC评估，非生成式）</td>
           <td>walsonyang等支持</td>
         </tr>
         <tr style="background:rgba(167,139,250,0.04);">

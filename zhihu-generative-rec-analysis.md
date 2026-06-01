@@ -54,7 +54,7 @@
 
 【字节/抖音】2025年 — 选择判别式Scaling路线
   技术: HLLM → OneTrans → RankMixer → TokenMixer-Large (2026.2)
-  核心: 判别式Scaling Law，70B/150B参数，Token Mixing，MoE架构
+  核心: 判别式Scaling Law，7B/15B参数，Token Mixing，MoE架构
   最新: UG-Separation (2026.2) — 推理延迟-20%，W8A16量化
   知乎评价: "字节全程没有明显押注生成式，选择判别式路线"
   代表观点: "抖音反其道而行之，在判别式精排模型上实现Scaling Law"
