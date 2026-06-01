@@ -1,1 +1,7 @@
 mermaid.min.js
+.DS_Store
+node_modules/
+package-lock.json
+*.pdf
+*.pptx
+html2pptx.py
