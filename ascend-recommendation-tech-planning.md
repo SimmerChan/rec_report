@@ -69,7 +69,7 @@
 |---------|---------|---------|
 | 传统判别式CTR | DeepFM/DIN/DIEN/DCN | 各厂商标配 |
 | **判别式Transformer CTR** | RankMixer/TokenMixer-Large/GRAB | 字节/快手/百度 |
-| **生成式GR** | Meta GR/HSTU、快手OneRec、美团MTGR | Meta/快手/美团 |
+| **生成式GR** | Meta GR/HSTU、快手OneRec、美团EGA-V2 | Meta/快手/美团 |
 | **Semantic ID检索** | Google TIGER | Google |
 | **LLM增强推荐** | 字节HLLM、阿里LUM、京东xLLM | 字节/阿里/京东 |
 
@@ -351,7 +351,7 @@
 |------|---------|---------|---------|
 | **字节** | 判别式Scaling为主 | RankMixer→TokenMixer-Large→UG-Separation | Token Mixer、用户组分离Serving |
 | **快手** | 生成式One-Model优先 | OneRec→OneLoc→OneMall→GR4AD→GRank | 端到端生成、Lazy Decoder、GR广告 |
-| **美团** | 双线并进 | MTFM（判别式统一）+MTGR/EGA（生成式广告） | Foundation Model、统一多分布 |
+| **美团** | 双线并进 | MTFM（判别式统一）+EGA-V2（生成式广告） | Foundation Model、统一多分布 |
 | **腾讯** | 生成式广告深耕 | GPR→OneRanker | Target-aware生成、KV透传 |
 | **阿里** | 判别式Transformer优化 | SORT | Systematically Optimized Ranking TRM |
 | **京东** | 生成式电商推荐 | OxygenREC | 慢思考+快生成分离架构 |
