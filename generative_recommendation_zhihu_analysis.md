@@ -36,7 +36,7 @@ Meta GR/HSTU(2024) → TIGER/SIM系列 → OneRec(快手)/MTGR(2025) → Ultra-H
 
 | 路线 | 代表工作 | 核心思路 | 激进程度 |
 |------|---------|---------|---------|
-| **端到端生成式** | Meta GR, OneRec(快手), OnePiece(腾讯) | 完全替代级联架构, NTP Loss, 自回归生成item序列 | 颠覆式 |
+| **端到端生成式** | Meta GR, OneRec(快手) | 完全替代级联架构, NTP Loss, 自回归生成item序列 | 颠覆式 |
 | **Semantic ID生成式** | Google TIGER, 快手OneRec(Semantic版) | RQ-Kmeans量化ID, NTP Loss, 受限解码空间 | 颠覆式 |
 | **Transformer序列建模+判别式CTR** | 字节RankMixer, 美团MTGR, 百度GRAB, 字节TokenMixer-Large | Transformer架构做序列建模, 二分类交叉熵CTR loss, AUC/GAUC评估 | 渐进式 |
 | **LLM增强推荐** | 字节HLLM, 阿里LUM, 京东xLLM | LLM作为特征增强模块嵌入现有系统, 不改变推荐范式 | 稳健式 |
@@ -136,42 +136,6 @@ Session-wise generation：
 
 **知乎讨论要点**：
 > 快手OneRec是真正把端到端生成式推荐落地到核心流量的一年工作，在业界有标志性意义。
-
----
-
-### 2.3 OnePiece — 腾讯算法竞赛参赛作品
-
-**论文信息**：
-- 全名：OnePiece: The Great Route to Generative Recommendation -- A Case Study from Tencent Algorithm Competition
-- arXiv：[2512.07424](https://arxiv.org/abs/2512.07424)
-- 机构：腾讯算法竞赛团队
-- 时间：2025年12月
-
-**核心创新**：
-
-#### ① 统一编码器-解码器框架验证Scaling Law
-
-```python
-两类生成式推荐范式在同一框架下验证：
-  (1) ANN-based framework：压缩用户embedding，检索最近邻
-      → 如 Kuaiformer
-  (2) Auto-regressive-based framework：Beam search从全空间解码item
-      → 如 OneRec
-结论：两种范式的loss均严格遵守power-law Scaling Law（R²>0.9）
-```
-
-#### ② Semantic ID编码（RQ-Kmeans量化）
-
-```
-视频 → [L1, L2, L3] 三层语义Token
-
-Level 1: [0-511] → 粗粒度语义（搞笑/美食/科技）
-Level 2: [0-511] → 中粒度语义（大类内细分）
-Level 3: [0-511] → 细粒度语义（具体内容区分）
-```
-
-**知乎讨论要点**（马进@腾讯）：
-> "在候选有限的搜索场景，基于semantic的生成式系统的潜力会比较大；在推荐领域，作为一路较强的召回会比较work。"
 
 ---
 
@@ -676,7 +640,6 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 | Meta GR | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 生成式推荐开山之作,NTP Loss |
 | HSTU | Meta | 2024 | [arXiv:2402.17152](https://arxiv.org/abs/2402.17152) | 与Meta GR为同一篇论文,1.5T参数,Scaling Law |
 | OneRec | 快手 | 2025 | [arXiv:2502.18965](https://arxiv.org/abs/2502.18965) | 端到端生成,Sparse MoE,IPA对齐 |
-| OnePiece | 腾讯 | 2025 | [arXiv:2512.07424](https://arxiv.org/abs/2512.07424) | Scaling Law验证,统一框架 |
 | Ultra-HSTU | Meta | 2026 | [arXiv:2602.16986](https://arxiv.org/abs/2602.16986) | 稀疏注意力优化 |
 | RankMixer | 字节 | 2025 | [arXiv:2507.15551](https://arxiv.org/abs/2507.15551) | Token-Mixing判别式升级 |
 | MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
