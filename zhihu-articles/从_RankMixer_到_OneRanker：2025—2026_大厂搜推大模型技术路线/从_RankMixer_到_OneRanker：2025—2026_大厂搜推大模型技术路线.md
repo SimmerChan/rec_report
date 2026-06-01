@@ -102,7 +102,7 @@ SORT 的意义并不只在于线上指标和吞吐改善，更在于它验证了
 
 **MTmixAtt** 则可视作“受 RankMixer 启发但形成独立路线”的工作。它通过 AutoToken 自动完成 heterogeneous features 到 token 的聚合，再以共享 dense experts 与场景特定 sparse experts 结合的 Multi-Mix Attention block 完成交互。与 RankMixer 相比，它更强调自动 grouping 与多场景自适应。
 
-**MTGR** 与 **UniROM / EGA-V1** 则代表美团在生成式推荐与广告 one-model 方向上的持续布局。前者尝试在 generative recommendation 中保留传统 DLRM 体系沉淀下来的 cross features；后者则更进一步，将广告排序重写为端到端生成问题。
+**MTGR** 与 **UniROM / EGA-V1** 则代表美团在判别式与生成式 one-model 方向上的持续布局。前者（MTGR）是基于 HSTU 架构的判别式 CTR 模型，采用 binary cross-entropy 损失训练，以 AUC/GAUC 为评估指标；后者（EGA-V1）则更进一步，将广告排序重写为端到端生成问题。
 
 美团这一组工作的共同特征在于：**并未在“判别式”与“生成式”之间做单线押注，而是同时推进两条路线。**
 
