@@ -70,7 +70,7 @@
 | 传统判别式CTR | DeepFM/DIN/DIEN/DCN | 各厂商标配 |
 | **判别式Transformer CTR** | RankMixer/TokenMixer-Large/GRAB | 字节/快手/百度 |
 | **生成式GR** | Meta GR/HSTU、快手OneRec、美团MTGR | Meta/快手/美团 |
-| **Semantic ID检索** | Google TIGER、腾讯OnePiece | Google/腾讯 |
+| **Semantic ID检索** | Google TIGER | Google |
 | **LLM增强推荐** | 字节HLLM、阿里LUM、京东xLLM | 字节/阿里/京东 |
 
 ### 2.2 互联网客户对昇腾迁移的核心需求
