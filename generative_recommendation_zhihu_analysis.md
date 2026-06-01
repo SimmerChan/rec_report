@@ -262,15 +262,19 @@ Level 3: [0-511] → 细粒度语义（具体内容区分）
 | 2024.11 | QARM | 多模态对齐，RLHF微调LLM |
 | 2025.02 | OneRec | 端到端生成式推荐奠基（详见2.2节） |
 | 2025.06 | OneRec Technical Report | 工业部署完整方案 |
-| 2025 | INFNet | 信息瓶颈理论的序列建模 |
+| 2025 | INFNet | 特征交互网络，线性复杂度 |
 
 **QARM核心问题**：
 - Representation Unmatching：MLLM的"相似"是语义相似，推荐是"行为相似"
 - Representation Unlearning：预训练MLLM的embedding被冻结，无法端到端优化
 
 **INFNet**：
-- 信息瓶颈理论指导序列压缩
-- 理论层面解释为什么Selective Mechanism有效
+- 全名：Aggregate and Broadcast: Scalable and Efficient Feature Interaction for Recommender Systems
+- arXiv：[2508.11565](https://arxiv.org/abs/2508.11565)
+- 机构：快手
+- 核心问题：特征交互的二次复杂度瓶颈 + 行为序列早期压缩丢失细粒度信号 + 任务信号注入时机晚
+- 解决方案：Information Flow Network —— Hub Token聚合广播机制，将复杂度从O(n²)降到线性O(n)
+- 线上效果：商业广告系统营收+1.587%，点击率+1.155%
 
 ---
 
@@ -678,7 +682,7 @@ Point-wise生成 → Session-wise生成 → 迭代偏好对齐(IPA)
 | MTGR | 美团 | 2025 | [arXiv:2505.18654](https://arxiv.org/abs/2505.18654) | 工业级生成式推荐框架 |
 | SSR | 阿里 | 2026 | SIGIR 2026 | 显式稀疏性设计 |
 | EGA-V2 | 美团 | 2025 | [arXiv:2505.17549](https://arxiv.org/abs/2505.17549) | 工业广告端到端生成 |
-| INFNet | 快手 | 2025 | - | 信息瓶颈理论 |
+| INFNet | 快手 | 2025 | [arXiv:2508.11565](https://arxiv.org/abs/2508.11565) | 特征交互网络,线性复杂度 |
 
 ### B. 知乎话题来源
 
