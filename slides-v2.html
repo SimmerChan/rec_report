@@ -995,7 +995,7 @@ graph LR
   </div>
 
   <div class="highlight-box" style="margin-top:12px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">标志性事件：</strong>2024年Meta GR论文（arXiv:2402.01115）首次提出生成式推荐范式，Facebook主APP实现CTR+12.4%。2025年快手OneRec全量上线，停留时长+1.6%（核心指标100%正向）。</p>
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">标志性事件：</strong>2024年Meta GR论文（arXiv:2402.17152, ICML 2024）首次提出生成式推荐范式，Facebook主APP实现CTR+12.4%。2025年快手OneRec全量上线，停留时长+1.6%（核心指标100%正向）。</p>
     <p style="font-size:clamp(0.82em,0.95vw,1.0em); margin-top:6px; color:var(--text-muted);">工程效率标杆：淘宝NEZHA延迟30ms内 · 京东50ms · 阿里RecGPT CTR+5% · 小红书SAGE突破信息茧房</p>
   </div>
 </div>
@@ -1335,7 +1335,7 @@ graph LR
         </div>
         <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
           <div style="font-size:0.85em; color:var(--cyan);">代表：TIGER (Google) · OneRec (快手)</div>
-          <div style="font-size:0.82em; color:var(--text-muted); margin-top:3px;">RecSys 2024 · arXiv:2512.07424</div>
+          <div style="font-size:0.82em; color:var(--text-muted); margin-top:3px;">arXiv:2305.05065 · arXiv:2502.18965</div>
         </div>
       </div>
       <div class="card card-g" style="padding:12px 14px; border-color:rgba(52,211,153,0.35); background:rgba(52,211,153,0.04);">
@@ -1848,7 +1848,7 @@ Self-Attention: O(n²) 复杂度<br/>
           <td>LUM/SSR + SORT(判别式另一条路)</td>
           <td>长序列建模 + 显式稀疏性，SORT系统性改造Transformer</td>
           <td><span style="color:var(--purple);">学术低调</span></td>
-          <td>SIGIR 2026, arXiv:2603.03988</td>
+          <td>arXiv:2603.03988</td>
           <td>判别式另一条路</td>
         </tr>
         <tr>
@@ -1862,7 +1862,7 @@ Self-Attention: O(n²) 复杂度<br/>
         <tr>
           <td><span class="tag tag-a">百度</span></td>
           <td>GRAB</td>
-          <td>序列优先CTR, CamA注意力, STS训练策略</td>
+          <td>序列优先CTR, CamA注意力, Scaling近似线性</td>
           <td><span style="color:var(--green);">稳健务实</span></td>
           <td>CTR+3.49%, 收入+3.05%</td>
           <td>2026年最新</td>
@@ -1895,7 +1895,7 @@ Self-Attention: O(n²) 复杂度<br/>
     </table>
   </div>
   <p style="font-size:0.65em; color:var(--text-muted); margin-top:4px;">
-    <strong>数据来源：</strong>OneRec(arXiv:2502.18965) · HSTU(arXiv:2402.17152,ICML 2024) · Ultra-HSTU(arXiv:2602.16986) · TokenMixer-Large(arXiv:2602.06563) · GRAB(arXiv:2602.01865,百度) · SSR(arXiv:2605.07275,SIGIR 2026)
+    <strong>数据来源：</strong>OneRec(arXiv:2502.18965) · HSTU(arXiv:2402.17152,ICML 2024) · Ultra-HSTU(arXiv:2602.16986) · TokenMixer-Large(arXiv:2602.06563) · GRAB(arXiv:2602.01865,百度) · SORT(arXiv:2603.03988,阿里)
   </p>
 </div>
 
@@ -2166,23 +2166,13 @@ graph TD
       <h4>阿里：显式稀疏性 + SORT判别式另一条路</h4>
       <div class="paper-ref" style="margin-top:8px;">
         <div class="title">SSR: Beyond Dense Connectivity — Explicit Sparsity for Scalable Recommendation</div>
-        <div class="meta">阿里 · SIGIR 2026 · arXiv:2605.07275</div>
-        <div class="abstract">发现Dense MLP存在隐式稀疏但无法释放Scaling潜力。显式稀疏性设计，突破传统MLP的参数量天花板。</div>
+        <div class="meta">阿里 · arXiv ID 待核实</div>
+        <div class="abstract">发现Dense MLP存在隐式稀疏但无法释放Scaling潜力。显式稀疏性设计，突破传统MLP的参数量天花板。（arXiv ID待补充，参考文件之前标注的 2605.07275 经核查实为UAV论文，已纠正）</div>
       </div>
       <div class="paper-ref" style="margin-top:6px;">
         <div class="title">SORT: Search-Oriented Transformer in Practice</div>
         <div class="meta">阿里 · arXiv:2603.03988 · 2026</div>
         <div class="abstract"><strong style="color:var(--purple);">判别式另一条路：</strong>request-centric sample organization + local attention + query pruning + generative pre-training。系统性改造Transformer，验证判别式backbone仍存在明确进化空间。</div>
-      </div>
-      <div class="stat-row" style="margin-top:8px; justify-content:flex-start; gap:8px;">
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--purple);">SIGIR 2026</div>
-          <div class="stat-label">顶会收录</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num" style="color:var(--cyan);">判别式</div>
-          <div class="stat-label">另一条路</div>
-        </div>
       </div>
     </div>
     <div>
@@ -2214,9 +2204,9 @@ graph TD
     <div>
       <h4>百度/Google/小红书特色路线</h4>
       <div class="paper-ref" style="margin-top:8px;">
-        <div class="title">GRAB: An LLM-Inspired Sequence-First CTR Prediction Paradigm</div>
+        <div class="title">GRAB: An LLM-Inspired Sequence-First CTR Prediction Modeling Paradigm</div>
         <div class="meta">百度 · arXiv:2602.01865 · 2026.2</div>
-        <div class="abstract">CamA多通道注意力机制 + STS (Sequence-Then-Sparse) 训练策略。<strong style="color:var(--green);">CTR+3.49%, 收入+3.05%</strong>。</div>
+        <div class="abstract">核心创新是 <strong style="color:var(--green);">CamA多通道注意力机制</strong>（Causal Action-aware Multi-channel Attention），CTR+3.49%、收入+3.05%。模型表现可预期的近似线性scaling。</div>
       </div>
       <div class="paper-ref" style="margin-top:6px;">
         <div class="title">LASER: 长序列全栈优化 (arXiv:2602.11562)</div>
@@ -2227,8 +2217,8 @@ graph TD
         <div style="font-size:clamp(0.78em,0.9vw,0.95em); color:var(--text-muted); margin-bottom:4px;">核心技术：</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.0em); color:var(--text-secondary);">
           <span class="tag tag-c" style="margin-bottom:4px;">CamA注意力</span>
-          <span class="tag tag-v" style="margin-bottom:4px;">STS训练策略</span>
-          <span class="tag tag-g" style="margin-bottom:4px;">长序列全栈</span>
+          <span class="tag tag-g" style="margin-bottom:4px;">序列优先CTR</span>
+          <span class="tag tag-v" style="margin-bottom:4px;">Scaling近似线性</span>
         </div>
       </div>
     </div>
@@ -2314,7 +2304,7 @@ graph TD
         </tr>
         <tr style="background:rgba(167,139,250,0.04);">
           <td><span class="tag tag-v">研究跟进中</span></td>
-          <td>阿里SSR, 百度GRAB</td>
+          <td>阿里SORT, 百度GRAB</td>
           <td>学术验证，规模落地待验证</td>
           <td>理论突破，成本待优化</td>
         </tr>
@@ -2328,7 +2318,7 @@ graph TD
     </table>
   </div>
   <div class="highlight-box" style="margin-top:12px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(SSR SIGIR 2026) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证)</p>
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(阿里SSR) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证)</p>
     <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式OneRec转向判别式UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU。</p>
   </div>
 </div>
