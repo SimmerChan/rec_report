@@ -333,13 +333,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="cover-subtitle">Generative Recommendation: The Paradigm Shift</div>
     <div class="cover-meta" style="margin-top:24px;">
       <div class="meta-chip"><div class="label">受众</div><div class="value">昇腾推荐团队</div></div>
-      <div class="meta-chip"><div class="label">日期</div><div class="value">2026年5月</div></div>
-      <div class="meta-chip"><div class="label">页数</div><div class="value">29页</div></div>
+      <div class="meta-chip"><div class="label">日期</div><div class="value">2026年6月</div></div>
+      <div class="meta-chip"><div class="label">页数</div><div class="value">34页</div></div>
     </div>
     <div class="highlight-box" style="margin-top:32px; max-width:720px;">
-      <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统正处于算法 Scaling Law 驱动的新一轮进化周期 — 从协同过滤到语义向量，从判别式到生成式与判别式并行</p>
+      <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统正处于 Scaling → Reasoning → Agentic 三阶段进化的关键节点 — 从生成式到判别式再到 Reasoning，2026 年 6 月 OneReason 开辟推荐基模新维度</p>
     </div>
-    <div style="margin-top:16px; font-size:clamp(0.78em, 0.95vw, 1.1em); color:var(--text-muted);">核心议题：Scaling Law · 算法演进 · 大厂路线 · 工业落地 · 昇腾行动建议</div>
+    <div style="margin-top:16px; font-size:clamp(0.78em, 0.95vw, 1.1em); color:var(--text-muted);">核心议题：Scaling Law · 算法演进 · 大厂路线 · 工业落地 · 推理赋能 · 昇腾行动建议</div>
   </div>
 </div>
 
@@ -1236,6 +1236,7 @@ graph LR
     A8 --> A9["OneRec 2025"]
     A9 --> A10["Ultra-HSTU 2026"]
     A10 --> A11["TokenMixer 2026"]
+    A11 --> A12["<strong>OneReason 2026.6</strong><br/>推荐 Reasoning"]
     style A1 fill:#1e293b,stroke:#64748b,color:#94a3b8
     style A2 fill:#1e293b,stroke:#64748b,color:#94a3b8
     style A3 fill:#1e293b,stroke:#64748b,color:#94a3b8
@@ -1247,6 +1248,7 @@ graph LR
     style A9 fill:#022c22,stroke:#34d399,color:#6ee7b7
     style A10 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
     style A11 fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+    style A12 fill:#7c2d12,stroke:#fb923c,color:#fed7aa,stroke-width:3px
       </div>
     </div>
     <div class="grid grid-2" style="gap:10px;">
@@ -1281,6 +1283,14 @@ graph LR
         </div>
         <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">OneRec快手端到端生成 · RankMixer统一Token-Mixing架构 · TokenMixer-Large 7B-15B参数</div>
         <div style="font-size:0.92em; margin-top:8px; color:var(--cyan);">核心价值：从学术到工业全面落地</div>
+      </div>
+      <div class="card" style="padding:14px 18px; border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.08);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+          <span style="font-size:0.9em; color:#fb923c; font-weight:700; background:rgba(251,146,60,0.15); padding:5px 12px; border-radius:4px;">2026.6</span>
+          <span style="font-size:1.15em; font-weight:800; color:#fb923c;">推荐 Reasoning 元年</span>
+        </div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">快手 OneReason 开创第五技术路线：578B token 四层预训练 + 推荐专属 CoT（三段式：Persona Abstraction / Interest Expansion / Transition Inference）+ GRPO 三方面改进 + Fast-Slow Thinking 部署架构。本地生活广告 10 天 A/B 曝光 +10.33%/收入 +8.234%，thinking 模式首次稳定超过 non-thinking 模式。</div>
+        <div style="font-size:0.92em; margin-top:8px; color:#fb923c;">核心价值：可解释 CoT · 业务约束写在推理层 · Agentic Recommender 前置地基</div>
       </div>
     </div>
   </div>
@@ -1799,6 +1809,121 @@ Self-Attention: O(n²) 复杂度<br/>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Slide 17b: OneReason 详解 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="slide" id="slide-17b">
+  <div class="section-label">OneReason · 快手 <span class="badge badge-new">NEW 2026.6</span></div>
+  <h2>OneReason：推荐 Reasoning 基模，第五技术路线 <span class="badge badge-new">突破</span></h2>
+  <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+    <div class="paper-ref" style="padding:6px 12px;">
+      <div class="title" style="font-size:clamp(0.82em,0.95vw,1.1em);">OneReason：当推荐系统学会思考</div>
+      <div class="meta" style="font-size:clamp(0.7em,0.82vw,0.92em);">快手 · arXiv:2606.06260 · 2026.6.9 · 0.8B 参数（Qwen3-8B 基础上）· 首次在工业级推荐场景验证"先思考再推荐"可行性</div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">① 四层语义对齐预训练</strong>
+        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
+          Token / Item / Relational / User 四层数据逐级打通 item-text 语义关联（解决 OneRec-Think/OpenOneRec "thinking 反而 hurts" 根因）
+        </div>
+      </div>
+      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">② 推荐专属 CoT 三段式</strong>
+        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
+          Persona Abstraction（20类画像）→ Interest Expansion（n=1/3/5 最佳）→ Transition Inference（多维评估）
+        </div>
+      </div>
+      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">③ GRPO 改进 + 先专后合</strong>
+        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
+          两阶段轨迹 + Set-wise 奖励 + 优化稳定策略；RL 是解锁推理收益必备（SFT 后 Delta LL 全负 → RFT 后全正）
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <h4 style="font-size:clamp(0.78em,0.92vw,1.02em); margin-bottom:2px;">四层预训练数据架构</h4>
+        <div class="mermaid-container" style="margin:0; padding:4px; width:100%; overflow:hidden; height:160px;">
+          <div class="mermaid" style="font-size:0.55em; transform:scale(0.85); transform-origin:center center; line-height:1.3;">
+graph TD
+    T["Token 粒度<br/>子Token拆解"]
+    I["Item 粒度<br/>物料粗粒化QA"]
+    R["Relational 粒度<br/>物品→兴趣→后续"]
+    U["User 粒度<br/>分域分组全时序"]
+    T --> PT["预训练 578B token"]
+    I --> PT
+    R --> PT
+    U --> PT
+    PT --> SFT["SFT 推荐专属CoT"]
+    SFT --> RL["RL GRPO改进"]
+    RL --> DEP["Fast-Slow Thinking部署"]
+    style T fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style I fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style R fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style U fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style PT fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
+    style SFT fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style RL fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
+    style DEP fill:#022c22,stroke:#22d3ee,color:#6ee7b7
+          </div>
+        </div>
+        <div class="code-block" style="font-size:clamp(0.65em,0.78vw,0.85em); padding:6px 10px; line-height:1.45;">
+<span style="color:#94a3b8">// 预训练 578B token 三阶段：</span>预热 110B → 全参 449B → 长序列 19B(32K窗口)
+<span style="color:#94a3b8">// SFT 3.86M：</span>R0 941K + R1 400K + R2 130K + R3 885K + Itemic 103K + 通用 1.5M
+<span style="color:#94a3b8">// RL：</span>两阶段轨迹 + Set-wise奖励 + 优化稳定 → RFT/MOPD融合
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <h4 style="font-size:clamp(0.78em,0.92vw,1.02em); margin-bottom:2px;">R3 推荐 CoT 三段式</h4>
+        <div class="mermaid-container" style="margin:0; padding:4px; width:100%; overflow:hidden; height:160px;">
+          <div class="mermaid" style="font-size:0.55em; transform:scale(0.85); transform-origin:center center; line-height:1.3;">
+graph LR
+    A["Persona Abstraction<br/>用户抽象 20类画像"] --> B["Interest Expansion<br/>兴趣发散 n=1/3/5最佳"]
+    B --> C["Transition Inference<br/>兴趣推断 多维评估"]
+    C --> D["推荐结果"]
+    A -.- A1["家庭主妇/直播购物<br/>共享设备用户"]
+    B -.- B1["少即是多<br/>n=10/20衰减"]
+    C -.- C1["证据+近期+连贯<br/>+画像匹配"]
+    style A fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style B fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style C fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style D fill:#022c22,stroke:#34d399,color:#6ee7b7
+    style A1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
+    style B1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
+    style C1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+          <div class="card" style="padding:5px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.05);">
+            <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">Fast-Slow Thinking</strong>
+            <div style="font-size:clamp(0.66em,0.78vw,0.88em); color:var(--text-secondary); margin-top:2px; line-height:1.35;">
+              Slow 近线：完整 OneReason 离线召回；Fast 在线：蒸馏版快思考
+            </div>
+          </div>
+          <div class="card" style="padding:5px 8px; border-color:rgba(34,211,238,0.4); background:rgba(34,211,238,0.05);">
+            <strong style="color:var(--cyan); font-size:clamp(0.72em,0.85vw,0.95em);">下一站：Agentic</strong>
+            <div style="font-size:clamp(0.66em,0.78vw,0.88em); color:var(--text-secondary); margin-top:2px; line-height:1.35;">
+              推荐基模具备规划/工具调用/长程对话能力
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:8px 12px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.06);">
+      <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">业务收益（快手本地生活广告 10 天 A/B · 5% vs 5%）</strong>
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:6px;">
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+10.33%</div><div class="stat-label">曝光</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+8.23%</div><div class="stat-label">收入</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+13.45%</div><div class="stat-label">thinking vs non</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">ROI > 5</div><div class="stat-label">年化数亿元</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 18: Part 4 大厂路线 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="slide" id="slide-18">
@@ -1820,11 +1945,11 @@ Self-Attention: O(n²) 复杂度<br/>
         </tr>
         <tr>
           <td><span class="tag tag-g">快手</span></td>
-          <td>OneRec/OneLoc/OneMall/GR4AD/PROMISE</td>
-          <td>全场景One系列：生成式→判别式统一架构</td>
-          <td><span style="color:var(--red);">激进→务实</span></td>
-          <td>停留时长+1.6%, 统一Scaling框架</td>
-          <td>多场景One系列布局</td>
+          <td>OneRec/OneLoc/OneMall/GR4AD/PROMISE/<strong>OneReason</strong>/UniMixer</td>
+          <td><strong>三线并行</strong>：生成式 OneRec 系列 + 判别式 UniMixer + <strong>推荐 Reasoning OneReason</strong>（2026.6 全新开辟）</td>
+          <td><span style="color:var(--purple);">激进-务实-Reasoning 三轨推进</span></td>
+          <td>停留时长+1.6% (OneRec) · 曝光+10.33%/收入+8.234% (OneReason 本地生活广告)</td>
+          <td><strong>Reasoning 路线开创者</strong></td>
         </tr>
         <tr>
           <td><span class="tag tag-v">字节/抖音</span></td>
@@ -1936,13 +2061,17 @@ graph TB
     B2 --> MIXER["（字节）MixFormer 2026.02 统一主干"]
     B3 --> MRG["（字节）MERGE 2026.01 动态层次化索引"]
 
-    %% 新增：阿里SORT、快手全貌、腾讯GPR/OneRanker
+    %% 新增：阿里SORT、快手全貌
     K1 -.-> OL["（快手）OneLoc 2025 本地生活"]
     K1 -.-> OM["（快手）OneMall 2025 电商"]
     OM -.-> GR4AD["（快手）GR4AD 2025 广告生成"]
     K2 -.-> PROM["（快手）PROMISE 2025 信息瓶颈"]
-    T1 --> GPR["（腾讯）GPR 2026 广告端到端"]
-    GPR --> ONER["（腾讯）OneRanker 2026 三层矛盾"]
+
+    %% 2026.6: OneReason 全新开辟
+    K1 -.-> ONER["（快手）OneReason 2026.6<br/>推荐 Reasoning · arXiv:2606.06260"]
+    K1 -.-> OPENO["（快手）OpenOneRec 2026<br/>OneReason 前代 · 160B token"]
+    ONER -.-> FAST["Fast-Slow Thinking 部署<br/>Slow 近线 + Fast 在线"]
+    FAST -.-> AGENT["Agentic Recommender Harness<br/>2026 H2 下一站演进"]
 
     %% 新增：小红书LASER、LinkedIn Feed-SR、京东OxygenREC
     LASER["（小红书）LASER 2026 长序列全栈"]
@@ -1977,11 +2106,13 @@ graph TB
     style OM fill:#064e3b,stroke:#34d399,color:#6ee7b7
     style GR4AD fill:#064e3b,stroke:#34d399,color:#6ee7b7
     style PROM fill:#064e3b,stroke:#34d399,color:#6ee7b7
-    style GPR fill:#4a1d96,stroke:#f472b6,color:#fbcfe8
-    style ONER fill:#4a1d96,stroke:#f472b6,color:#fbcfe8
     style LASER fill:#022c22,stroke:#f472b6,color:#fbcfe8
     style FEEDSR fill:#064e3b,stroke:#34d399,color:#6ee7b7
     style OXY fill:#064e3b,stroke:#a3a3a3,color:#d4d4d4
+    style ONER fill:#7c2d12,stroke:#fb923c,color:#fed7aa,stroke-width:3px
+    style OPENO fill:#7c2d12,stroke:#fb923c,color:#fed7aa
+    style FAST fill:#7c2d12,stroke:#fb923c,color:#fed7aa,stroke-width:2px
+    style AGENT fill:#4c1d95,stroke:#c4b5fd,color:#ddd6fe,stroke-width:2px,stroke-dasharray:5
     </div>
     </div>
     <style>
@@ -2010,14 +2141,18 @@ graph TB
         字节HLLM · 阿里LUM · 京东xLLM<br/>
         作为特征增强嵌入现有系统 · 不改变推荐范式
       </div>
+      <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em); border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.05);">
+        <strong style="color:#fb923c;">推荐Reasoning路线 <span class="badge badge-new">NEW 2026.6</span></strong><br/>
+        <strong>快手OneReason (arXiv:2606.06260)</strong><br/>
+        578B token 四层预训练 + 推荐专属CoT + GRPO改进 + Fast-Slow Thinking
+      </div>
     </div>
   </div>
   <div style="display:flex; flex-wrap:wrap; gap:12px 20px; font-size:0.72em; color:var(--text-secondary); margin-top:6px; padding:8px 10px; background:rgba(255,255,255,0.02); border-radius:6px;">
     <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #34d399; border-radius:3px; display:inline-block;"></span><span>Transformer判别式CTR（字节/美团/百度）</span></div>
     <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#1e1b4b; border:2px solid #a78bfa; border-radius:3px; display:inline-block;"></span><span>纯生成式/大模型Scaling（Meta/字节）</span></div>
     <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #fbbf24; border-radius:3px; display:inline-block;"></span><span>快手UniMixer统一架构</span></div>
-    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#064e3b; border:2px solid #34d399; border-radius:3px; display:inline-block;"></span><span>语义ID生成式（Google/快手/腾讯）</span></div>
-    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#4a1d96; border:2px solid #f472b6; border-radius:3px; display:inline-block;"></span><span>广告端到端生成（腾讯GPR/OneRanker）</span></div>
+    <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#064e3b; border:2px solid #34d399; border-radius:3px; display:inline-block;"></span><span>语义ID生成式（Google/快手）</span></div>
     <div style="display:flex; align-items:center; gap:5px;"><span style="width:14px; height:14px; background:#022c22; border:2px solid #a3a3a3; border-radius:3px; display:inline-block;"></span><span>推理系统优化（京东）</span></div>
   </div>
   <p style="font-size:0.62em; color:var(--text-muted); margin-top:4px;">
@@ -2071,12 +2206,17 @@ graph TD
     </div>
     <div class="model-card">
       <div class="model-name">UniMixer <span class="badge badge-new">2026.4</span></div>
-      <div class="model-org">快手 · 战略转向</div>
+      <div class="model-org">快手 · 判别式 Scaling 路线</div>
       <div class="model-contrib">判别式Scaling统一架构：统一注意力/TokenMixer/FM三种Scaling块。<strong style="color:var(--purple);">从激进生成式→务实判别式</strong>。</div>
+    </div>
+    <div class="model-card" style="border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.06);">
+      <div class="model-name">OneReason <span class="badge badge-new">NEW 2026.6</span></div>
+      <div class="model-org">快手 · <strong style="color:#fb923c;">推荐 Reasoning 路线（全新开辟）</strong></div>
+      <div class="model-contrib">578B token 四层预训练 (Token/Item/Relational/User) + 推荐专属CoT (Persona Abstraction → Interest Expansion → Transition Inference) + GRPO三方面改进 + "先专后合"训练链路 + Fast-Slow Thinking双轨部署。<strong style="color:#fb923c;">本地生活广告曝光+10.33%/收入+8.234%</strong>，Pass@4 thinking领先non-thinking +13.45%。arXiv:2606.06260。</div>
     </div>
   </div>
   <div class="highlight-box" style="margin-top:10px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">战略转变：</strong>快手是"从激进到务实"的典型代表。生成式OneRec验证了端到端可行性，但面对Scaling Law的不确定性和延迟问题，2026年转向判别式UniMixer，保留现有架构享受Scaling红利。</p>
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">三线并行战略：</strong>快手是"激进-务实-Reasoning 三轨推进"的典型代表。<strong style="color:var(--green);">生成式路线</strong> OneRec 系列端到端生成；<strong style="color:var(--purple);">判别式 Scaling 路线</strong> UniMixer 统一架构；<strong style="color:#fb923c;">推荐 Reasoning 路线</strong> OneReason 全新开辟。OneReason 不是 UniMixer 的替代，而是与生成式 OneRec、判别式 UniMixer 并行的第三条战线，也是 Agentic Recommender 的前置地基。</p>
   </div>
 </div>
 
@@ -2292,8 +2432,8 @@ graph TD
       <tbody>
         <tr style="background:rgba(52,211,153,0.04);">
           <td><span class="tag tag-g">已上线验证</span></td>
-          <td>快手OneRec, Meta GR, 字节RankMixer</td>
-          <td>停留时长+0.5~1.2%, 订单+1.66%</td>
+          <td>快手OneRec, Meta GR, 字节RankMixer, <strong style="color:#fb923c;">快手OneReason</strong></td>
+          <td>停留时长+0.5~1.2%, 订单+1.66%, <strong style="color:#fb923c;">本地生活广告曝光+10.33%/收入+8.234%</strong></td>
           <td>GuoXun、王喆等认可</td>
         </tr>
         <tr style="background:rgba(34,211,238,0.04);">
@@ -2317,9 +2457,9 @@ graph TD
       </tbody>
     </table>
   </div>
-  <div class="highlight-box" style="margin-top:12px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(阿里SSR) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证)</p>
-    <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式OneRec转向判别式UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU。</p>
+<div class="highlight-box" style="margin-top:12px;">
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(阿里SSR) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证) · <strong style="color:#fb923c;">推荐 Reasoning（OneReason 四层语义对齐 + 推荐专属 CoT + GRPO 改进）</strong></p>
+    <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式 OneRec 转向判别式 UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU；<strong style="color:#fb923c;">快手 OneReason 开辟推荐 Reasoning 第五路线，thinking 模式首次稳定超越 non-thinking</strong>。</p>
   </div>
 </div>
 
@@ -2344,11 +2484,15 @@ graph TD
     </div>
     <div class="toc-item" style="margin-bottom:10px;">
       <div style="background:rgba(251,191,36,0.15); color:var(--amber); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">4</div>
-      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">生成式one-model在广告/电商加速落地</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">美团EGA-V2/快手GR4AD/腾讯GPR/OneRanker：广告天然面临多目标+页面级生成+value alignment，与生成式框架天然契合，端到端生成已在广告场景率先突破</span></div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">生成式one-model在广告/电商加速落地</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">美团EGA-V2/快手GR4AD：广告天然面临多目标+页面级生成+value alignment，与生成式框架天然契合，端到端生成已在广告场景率先突破</span></div>
     </div>
     <div class="toc-item">
       <div style="background:rgba(248,113,113,0.15); color:var(--red); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">5</div>
       <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">判别式大ranking backbone进入成熟期</span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">RankMixer/TokenMixer-Large/UG-Separation/SORT/Feed-SR/MTFM：判别式ranker并未迅速失去演进空间，而是更像foundation model——更统一token接口、更深一体化主干、更明确scaling目标</span></div>
+    </div>
+    <div class="toc-item" style="border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+      <div style="background:rgba(251,146,60,0.2); color:#fb923c; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">6</div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">推荐 Reasoning 进入工业落地阶段 <span class="badge badge-new">NEW 2026.6</span></span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">快手 OneReason（arXiv:2606.06260）首次在工业级推荐场景让 thinking 模式稳定超过 non-thinking 模式（Pass@4 +13.45%）；Fast-Slow Thinking 双轨架构成为推理式推荐落地新范式；本地生活广告曝光 +10.33%/收入 +8.234% 验证商业可行性；Agentic Recommender Harness 是下一站演进方向</span></div>
     </div>
   </div>
 </div>
@@ -2362,7 +2506,7 @@ graph TD
   <div class="highlight-box" style="margin-top:10px;">
     <p style="font-size: 2.0em;"><strong>昇腾推荐团队的核心定位：</strong>支撑互联网客户从GPU平台迁移到昇腾平台，或在昇腾平台原生开发新一代推荐模型。生成式推荐的技术浪潮为昇腾提供了差异化窗口期。</p>
   </div>
-  <div class="grid grid-3" style="margin-top:14px; gap:12px;">
+  <div class="grid grid-4" style="margin-top:14px; gap:12px;">
     <div class="card card-c">
       <div style="font-size:1.4em; margin-bottom:8px;">🔄</div>
       <h3 style="color:var(--cyan);">迁移支撑（根基）</h3>
@@ -2376,6 +2520,13 @@ graph TD
       <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">TorchRec-V2生成式框架、Recsys-GR完整适配、训推一体</p>
       <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>2026 Q3-Q4</div>
       <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--amber);"><strong>优先级：</strong>P1</div>
+    </div>
+    <div class="card" style="border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+      <div style="font-size:1.4em; margin-bottom:8px;">🧠</div>
+      <h3 style="color:#fb923c;">Reasoning 支撑（新方向）<span class="badge badge-new">NEW</span></h3>
+      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">GRPO 改进训练算子 · 多阶段 SFT pipeline · Fast-Slow Thinking 部署框架 · Agentic Recommender Harness</p>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>2026 H2</div>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:#fb923c;"><strong>优先级：</strong>P1（差异化竞争点）</div>
     </div>
     <div class="card card-g">
       <div style="font-size:1.4em; margin-bottom:8px;">📡</div>
@@ -2434,6 +2585,18 @@ graph TD
           <td><span class="tag tag-a">P3 探索</span></td>
           <td>arXiv论文1个月内完成算子需求分析</td>
           <td>建立快速跟进机制不掉队</td>
+        </tr>
+        <tr style="background:rgba(251,146,60,0.06);">
+          <td><strong style="color:#fb923c;">Reasoning 基模推理支撑能力</strong><span class="badge badge-new">NEW</span></td>
+          <td><span class="tag tag-a">P1 Q4</span></td>
+          <td>支持 OneReason 类推荐 Reasoning 基模完整推理链</td>
+          <td>GRPO 改进训练算子 + 多阶段 SFT pipeline + Fast-Slow Thinking 部署框架</td>
+        </tr>
+        <tr style="background:rgba(251,146,60,0.06);">
+          <td><strong style="color:#fb923c;">Agentic Recommender Harness 原型</strong><span class="badge badge-new">NEW</span></td>
+          <td><span class="tag tag-a">P2 探索</span></td>
+          <td>抢占下一代 Agentic 推荐系统技术高地</td>
+          <td>规划+工具调用+长程对话推荐的昇腾原生支持</td>
         </tr>
       </tbody>
     </table>
