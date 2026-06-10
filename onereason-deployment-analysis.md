@@ -89,7 +89,31 @@
    上层 itemic token 走小 beam 保证覆盖率,下层走 greedy — 在 beam search 与 RT 之间取平衡。
 
 3. **RT 完全解耦 + 自动降级**
-   Redis 候选池 + 回退原 OneRec 链路,OneReason 任何抖动都不会污染主请求时延。
+   把 OneReason 推理从用户请求的关键路径中彻底剥离,任何抖动都不影响主链路 RT。
+
+   **论文原文依据**(§9.2 Step 1):
+
+   > "We build a **decoupled** nearline retrieval pipeline that does not participate in **early-stage competition**. Instead, it is integrated into the downstream ranking model for joint scoring with the real-time OneRec outputs. When OneReason retrieval results are unavailable, the system automatically falls back to the original OneRec pipeline to ensure stability and coverage."
+
+   **3 层含义拆解**:
+
+   ① **不参与早期召回竞争(does not participate in early-stage competition)**
+   传统级联架构里多路召回(I2I、向量、CF、热门...)要在毫秒级预算内并行竞争,谁慢谁拖整个链路。OneReason 走近线(nearline),**不进入这场早期竞赛**,跑多久都行(分钟级、小时级均可)。
+
+   ② **不进入用户请求的关键路径**
+   **用户点开 APP → 看到推荐列表**这条同步请求里,根本不会触发 OneReason 推理。它跑完后只做一件事:**把候选 item ID 写入 Redis**(Step 3-4)。用户请求直接从 Redis 读候选(纳秒级)。
+
+   ```
+   用户请求 ──→ 主链路(ranker) ──→ 曝光
+        └─ 从 Redis 读 OneReason 早算好的候选(纳秒级,不阻塞)
+
+   OneReason-8B ──→ Redis 写入(独立进程,不阻塞用户请求)
+   ```
+
+   ③ **出问题自动降级,不影响主链路**
+   OneReason 挂了 / 候选池空了 / Redis 没数据 → 系统直接跳过 OneReason,回到原 OneRec 链路,**主链路 RT 不会有任何抖动**。
+
+   **对比不解耦会怎样**:OneReason-8B 单次推理几百毫秒~秒级,千 QPS 流量 → 算力爆炸 + 一旦推理抖动 → 用户 P99 直接爆表 + 一旦服务挂 → 整个推荐链路挂。论文把这套机制命名为 "Fast-Slow Thinking" —— OneReason 做"慢思考"(离线、可容错、可用大模型),用户链路做"快思考"(在线、严格时延、必须稳定),**两边在 Redis 异步握手,互不阻塞**。
 
 4. **在线增量训练(§9.2)**
    预训练增量 + SFT 增量,用当日日志做监督,缓解模型陈旧但不需要每次在线重训。
