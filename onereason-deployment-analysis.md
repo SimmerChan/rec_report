@@ -13,10 +13,12 @@
 2. [线上推理时延是怎么扛住的](#二线上推理时延是怎么扛住的论文-92--a43-原话)
 3. [推荐落地的两条范式](#三推荐落地的两条范式双路并行)
 4. [时延可控的 5 个保障机制](#四为什么这么做对时延可控--5-个保障机制)
-5. [落地可行性分析](#五落地可行性--优势-vs-风险)
-6. [实操建议](#六给想上这个方案的实操建议)
-7. [最终结论](#七最终结论)
-8. [附录:关键数据点速查表](#附录关键数据点速查表)
+5. [上线定位:召回还是排序?](#五上线定位召回还是排序排序模型用的是-onereason-吗)
+6. [新物料保障机制](#六新物料保障机制)
+7. [落地可行性分析](#七落地可行性--优势-vs-风险)
+8. [实操建议](#八给想上这个方案的实操建议)
+9. [最终结论](#九最终结论)
+10. [附录:关键数据点速查表](#附录关键数据点速查表)
 
 ---
 
@@ -97,7 +99,161 @@
 
 ---
 
-## 五、落地可行性 — 优势 vs 风险
+## 五、上线定位:召回还是排序?排序模型用的是 OneReason 吗?
+
+**一句话回答:OneReason 本体只做召回(Slow);线上排序用的是「蒸馏增强版 OneRec + 独立 ranker」,不是 OneReason 本身。**
+
+### 5.1 范式 A · Slow Pipeline:OneReason 本体=召回器
+
+论文 §9.2 原话:
+
+> "Slow Pipeline: OneReason. This method directly employs OneReason for retrieval. Specifically, OneReason leverages user profile information and historical interaction sequences to predict the next itemic tokens that the user is most likely to engage with, which are then decoded into a candidate item list serving as the retrieval output of the Slow pipeline."
+
+这里的 OneReason(8B)是**召回器**:产出 item 候选列表,写入 Redis。
+
+### 5.2 范式 B · Fast Pipeline:线上跑的"OneReason for OneRec"不是 OneReason
+
+论文 §9.2 + §A.2 原话:
+
+> "Fast Pipeline: OneReason for OneRec. We leverage the outputs of OneReason to enhance recommendations, where the most relevant itemic tokens are transformed into embedding representations. In OneRec, we introduce a dedicated Thinking Token to incorporate these signals, which serves to distill knowledge from OneReason into the online OneRec within the Fast pipeline."
+
+> "we first use OneReason to predict the next itemic token with the highest probability of user interaction, and then decode it into the embedding representation corresponding to the itemic token via a quantized model, serving as a supervision signal for the reasoning process. Subsequently, we introduce a Thinking Token into the generative recommendation model and use the hidden state at the decoder-side `<BOS>` position as the supervision target. We then apply an Alignment Network to impose representation-level constraints, thereby distilling OneReason's knowledge and reasoning capabilities into the generative recommendation model within a high-dimensional semantic space."
+
+— 注意:8B 的 OneReason 在这里是**教师模型**,负责离线蒸馏。线上实时跑的是被蒸馏后的 OneRec(Thinking Token 版),不是 OneReason 本身。
+
+### 5.3 Step 4 的「排序模型」=快手既有的独立 ranker
+
+论文 §9.2 Step 4 原话:
+
+> "The decoded item IDs are written to Redis via offline inference jobs, forming a candidate pool for online serving. During inference, the nearline OneReason results and real-time OneRec retrieval results are jointly fed into the **ranking model** for unified fusion, enabling a Fast-Slow Thinking recommendation system."
+
+— 论文只说 **"the ranking model"**,没有指明是 OneReason。真实承担排序打分的是快手本地生活广告场景**既有的独立 ranker**,OneReason(Slow)和 OneRec(实时)只是给它喂候选集和 thinking token embedding。
+
+### 5.4 最终 4 层流水线结构
+
+```
+┌────────────────────────┐
+│ OneReason-8B(离线)     │ ── Slow Pipeline ──→ Redis 候选池
+└────────────────────────┘                          │
+                                                    ▼
+用户请求 ──→ 候选集合融合(OneReason + OneRec) ──→ 独立 ranker ──→ 曝光决策
+                                                    ▲
+┌────────────────────────┐                          │
+│ OneRec + Thinking Token│ ── Fast Pipeline ───────┘
+│ (蒸馏版,实时)           │
+└────────────────────────┘
+```
+
+### 5.5 结论对照表
+
+| 角色 | 模型 | 跑在哪 | 论文原文说法 |
+| --- | --- | --- | --- |
+| 召回器(Slow) | OneReason-8B | 离线,天/小时级 | "directly employs OneReason for retrieval" |
+| 召回增强(Fast 教师) | OneReason-8B | 离线蒸馏 | "the outputs of OneReason... transformed into embedding" |
+| 在线召回器(Fast 学生) | 蒸馏版 OneRec | **实时在线** | "introduce a Thinking Token into the generative recommendation model" |
+| 排序模型 | **快手既有独立 ranker** | 实时在线 | "jointly fed into the ranking model for unified fusion" |
+
+**要点**:**OneReason 本体只做召回,不做在线排序;线上排序是「蒸馏版 OneRec + 独立 ranker」**。这是这套架构最反直觉的地方 — 大模型没有进入主链路,主链路仍然是大厂已经验证过的 ranker + 蒸馏小模型。
+
+---
+
+## 六、新物料保障机制
+
+**论文没有正面回答"如何保证新物料进解码结果",但把"新物料"作为 §9.1 和 §A.4.1 的核心风险,给出了 4 层组合机制 + 1 层兜底**。
+
+### 6.1 风险前提:不更新就一定退化
+
+§9.1 原话:
+
+> "Notably, the Kuaishou life-service advertising scenario is not included in the OneReason training data."
+
+§A.4.1 原话:
+
+> "OneReason requires incremental updates to adapt to evolving item corpora and user interests. **Without such updates, we observe significant performance degradation.**"
+
+### 6.2 4 层组合机制
+
+**机制 ①:R0 Perception 双向对齐(§A.1)**
+
+> "For item understanding in new industrial scenarios, we adapt the R0: Perception method for **bidirectional alignment between itemic tokens and captions**."
+
+新物料不是直接进模型,而是先走一遍 R0:用多模态 LLM 生成 caption → RQ-KMeans 量化成 itemic token → 完成 token ↔ caption 的双向绑定。这是新物料进入 LLM 词汇表的入口。
+
+**机制 ②:Stage 1 预训练嵌入微调(§4)**
+
+> "Stage1: only tune the incremental itemic-pattern-related parameters. ... introduced itemic-pattern embeddings to settle into the semantic space without disturbing the pretrained weights."
+
+三阶段预训练的 Stage1(110B token)只训**新 item 的嵌入向量**,LLM 主干冻结,避免对已有权重的灾难性干扰。
+
+**机制 ③:周期性增量预训练(§9.2 + §A.1)**
+
+> "We conduct **periodic continual pre-training on newly introduced items** within fixed time windows to keep pace with the latest content distribution. To prevent catastrophic forgetting and maintain the general reasoning capabilities of OneReason, we jointly train on a mixture of newly collected data and a sampled general-domain corpus."
+
+固定时间窗的增量预训练 + 混样通用语料抗遗忘。
+
+**机制 ④:SFT 增量 + 用户画像对齐(§9.2 + §A.1)**
+
+> "Scenario-aware Continual Supervised Fine-tuning. We further train OneReason for recommendation by conditioning on user portrait texts and historical interactions to predict the next itemic token. ... we introduce a curriculum learning strategy that progresses from high-activity to low-activity users."
+
+冷启新物料的兜底:用户少 → 行为少,但有 caption + 用户画像,也能学到合理分布。
+
+### 6.3 解码侧的覆盖度机制(§A.4.2)
+
+> "we design a hierarchical generation strategy for item ID decoding under small-scale beam search. **The model first generates candidates at the top itemic token-level to ensure coverage**, and then completes lower-level structures via greedy decoding"
+
+— 顶层 itemic token 走 beam search(覆盖优先,长尾不丢),下层细节走 greedy(效率优先)。新物料只要有合理的顶层 token 就能被召回。
+
+### 6.4 最终兜底:OneRec 链路自动回退(§9.2 Step 1)
+
+> "When OneReason retrieval results are unavailable, the system automatically falls back to the original OneRec pipeline to ensure stability and coverage."
+
+— OneRec 不强依赖 itemic token 训练(它有 ID+语义混合路径),所以即便 OneReason 还没把新物料学到,OneRec 这条路也能兜住。
+
+### 6.5 新物料端到端流程图
+
+```
+新物料入库
+    │
+    ▼
+R0 Perception 双向对齐(caption → itemic token)
+    │
+    ▼
+Stage 1 嵌入微调(只训新 item 嵌入)
+    │
+    ▼
+周期性增量预训练(新数据 + 通用语料)
+    │
+    ▼
+SFT 增量 + 用户画像对齐(高活跃 → 低活跃 curriculum)
+    │
+    ▼
+OneReason checkpoint 更新 → 离线推理重跑
+    │
+    ▼
+Redis 候选池刷新(顶层 beam 保覆盖,下层 greedy)
+    │
+    ▼
+在线请求 → 候选池(已含新物料)
+    │
+    ▼
+OneRec 兜底:OneReason 不可用 / 新物料未及时训练时
+```
+
+### 6.6 硬约束
+
+**新物料从入库到能被 OneReason 召回,端到端最快 ≈ 1 个增量训练周期**。论文自承:
+
+§A.4.3:
+> "cannot fully replace real-time retrieval"
+
+§A.4.2:
+> "current strategy still lacks consideration of business value and resource constraints"
+
+— 当前架构里 OneReason 检索是**离线做的**,所以真正决定新物料曝光速度的是**天/小时级的增量训练 + 离线重推理频率**,而不是在线模型的实时反应。
+
+---
+
+## 七、落地可行性 — 优势 vs 风险
 
 ### 优势
 
@@ -138,7 +294,7 @@
 
 ---
 
-## 六、给「想上这个方案」的实操建议
+## 八、给「想上这个方案」的实操建议
 
 ### 1. 短期可落:照搬 Fast Pipeline (OneReason for OneRec)
 
@@ -165,11 +321,13 @@
 
 ---
 
-## 七、最终结论
+## 九、最终结论
 
 - **可行性**:已落地,10 天线上 +10.33% 曝光 +8.23% 收入 + ROI > 5,论文实锤。
+- **上线定位**:OneReason 本体只做召回(Slow Pipeline),线上排序是「蒸馏版 OneRec + 独立 ranker」,大模型没有进入主链路。
 - **时延保障**:不是靠"硬扛 8B 实时",而是靠「**8B 离线 → Redis 候选池 → 在线融合**」,外加 0.8B 蒸馏做 Thinking Token 进 OneRec,这套 Fast-Slow 架构把推理时延从主链路彻底剥离。
-- **核心瓶颈与未来**:小 beam 解码、增量训练对通用能力的损伤、0.8B 实时化,是论文自己列出的 future work — 也是任何想直接抄这套方案的团队要提前预案的位置。
+- **新物料保障**:R0 Perception 双向对齐 + Stage1 嵌入微调 + 周期性增量预训练 + SFT 增量 + 解码顶层 beam 保覆盖 + OneRec 链路自动回退兜底,共 4 层机制 + 1 层兜底,但端到端最快 ≈ 1 个增量训练周期。
+- **核心瓶颈与未来**:小 beam 解码、增量训练对通用能力的损伤、0.8B 实时化、新物料曝光周期,是论文自己列出的 future work — 也是任何想直接抄这套方案的团队要提前预案的位置。
 
 ---
 
@@ -190,3 +348,6 @@
 | **解码策略** | 上层小 beam + 下层 greedy(§A.4.2) |
 | **增量训练** | 预训练增量(混新数据+通用语料)+ SFT 增量(当日日志) |
 | **兜底机制** | OneReason 不可用时自动回退到原 OneRec |
+| **OneReason 角色** | 仅做离线召回(Slow Pipeline)+ 蒸馏教师(Fast Pipeline) |
+| **线上排序模型** | 蒸馏版 OneRec(Thinking Token)+ 快手本地生活广告既有独立 ranker |
+| **新物料机制** | R0 双向对齐 + Stage1 嵌入微调 + 周期增量预训练 + SFT 增量 + 顶层 beam 保覆盖 |
