@@ -337,7 +337,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="meta-chip"><div class="label">页数</div><div class="value">34页</div></div>
     </div>
     <div class="highlight-box" style="margin-top:32px; max-width:720px;">
-      <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统正处于 Scaling → Reasoning → Agentic 三阶段进化的关键节点 — 从生成式到判别式再到 Reasoning，2026 年 6 月 OneReason 开辟推荐基模新维度</p>
+      <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统正处于 Scaling → Reasoning → Agentic 三阶段进化的关键节点 — 2026 年 6 月 OneReason 完成推荐 Reasoning 范式的首次工业级验证（**单点业务，勿过度解读为范式转移**）</p>
     </div>
     <div style="margin-top:16px; font-size:clamp(0.78em, 0.95vw, 1.1em); color:var(--text-muted);">核心议题：Scaling Law · 算法演进 · 大厂路线 · 工业落地 · 推理赋能 · 昇腾行动建议</div>
   </div>
@@ -1287,10 +1287,10 @@ graph LR
       <div class="card" style="padding:14px 18px; border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.08);">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
           <span style="font-size:0.9em; color:#fb923c; font-weight:700; background:rgba(251,146,60,0.15); padding:5px 12px; border-radius:4px;">2026.6</span>
-          <span style="font-size:1.15em; font-weight:800; color:#fb923c;">推荐 Reasoning 元年</span>
+          <span style="font-size:1.15em; font-weight:800; color:#fb923c;">推荐 Reasoning 首次探索 <span style="font-size:0.7em; color:var(--text-muted);">（单点业务验证）</span></span>
         </div>
-        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">快手 OneReason 开创第五技术路线：578B token 四层预训练 + 推荐专属 CoT（三段式：Persona Abstraction / Interest Expansion / Transition Inference）+ GRPO 三方面改进 + Fast-Slow Thinking 部署架构。本地生活广告 10 天 A/B 曝光 +10.33%/收入 +8.234%，thinking 模式首次稳定超过 non-thinking 模式。</div>
-        <div style="font-size:0.92em; margin-top:8px; color:#fb923c;">核心价值：可解释 CoT · 业务约束写在推理层 · Agentic Recommender 前置地基</div>
+        <div style="font-size:1em; color:var(--text-muted); line-height:1.7;">快手 OneReason 在本地生活广告 5%×5% 流量 A/B 完成验证：578B token 四层预训练 + 推荐专属 CoT（三段式：Persona Abstraction / Interest Expansion / Transition Inference）+ GRPO 三方面改进 + Fast-Slow Thinking 双轨部署。本地生活广告 10 天 A/B 曝光 +10.33% / 收入 +8.234%。**注意**：OneReason-8B 本体只做离线召回，主链路仍是蒸馏版 OneRec + 既有 ranker；+13.45% thinking 优势是离线 Pass@4 指标，不是 A/B 收益。</div>
+        <div style="font-size:0.92em; margin-top:8px; color:#fb923c;">定位：方法论验证 · 单点业务 · 业务域单一 · 跨业务迁移性未证</div>
       </div>
     </div>
   </div>
@@ -1813,7 +1813,7 @@ Self-Attention: O(n²) 复杂度<br/>
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="slide" id="slide-17b">
   <div class="section-label">OneReason · 快手 <span class="badge badge-new">NEW 2026.6</span></div>
-  <h2>OneReason：推荐 Reasoning 基模，第五技术路线 <span class="badge badge-new">突破</span></h2>
+  <h2>OneReason：推荐 Reasoning 早期探索 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">单点业务验证</span></h2>
   <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
     <div class="paper-ref" style="padding:6px 12px;">
       <div class="title" style="font-size:clamp(0.82em,0.95vw,1.1em);">OneReason：当推荐系统学会思考</div>
@@ -1913,11 +1913,14 @@ graph LR
 
     <div class="card" style="padding:8px 12px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.06);">
       <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">业务收益（快手本地生活广告 10 天 A/B · 5% vs 5%）</strong>
+      <div style="font-size:clamp(0.65em,0.78vw,0.85em); color:var(--text-muted); margin-top:3px; margin-bottom:5px;">
+        **线上 A/B（Fast+Slow 合计）**：范式A曝光+0.94%/收入+4.53% + 范式B曝光+6.83%/收入+4.64% = 合计 +10.33%/+8.23%。OneReason-8B 本体只做离线召回（Slow Pipeline），主链路仍是蒸馏版 OneRec + 既有 ranker。
+      </div>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:6px;">
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+10.33%</div><div class="stat-label">曝光</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+8.23%</div><div class="stat-label">收入</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+13.45%</div><div class="stat-label">thinking vs non</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">ROI > 5</div><div class="stat-label">年化数亿元</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+10.33%</div><div class="stat-label">曝光（线上 A/B）</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+8.23%</div><div class="stat-label">收入（线上 A/B）</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:var(--text-muted); font-size:clamp(1.1em,1.5vw,1.7em);">+13.45%</div><div class="stat-label" style="color:var(--text-muted);">Pass@4（<strong>离线</strong>）</div></div>
+        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">ROI > 5</div><div class="stat-label">600卡/4亿用户</div></div>
       </div>
     </div>
   </div>
@@ -1946,10 +1949,10 @@ graph LR
         <tr>
           <td><span class="tag tag-g">快手</span></td>
           <td>OneRec/OneLoc/OneMall/GR4AD/PROMISE/<strong>OneReason</strong>/UniMixer</td>
-          <td><strong>三线并行</strong>：生成式 OneRec 系列 + 判别式 UniMixer + <strong>推荐 Reasoning OneReason</strong>（2026.6 全新开辟）</td>
-          <td><span style="color:var(--purple);">激进-务实-Reasoning 三轨推进</span></td>
-          <td>停留时长+1.6% (OneRec) · 曝光+10.33%/收入+8.234% (OneReason 本地生活广告)</td>
-          <td><strong>Reasoning 路线开创者</strong></td>
+          <td><strong>三轨探索</strong>（成熟度差异大）：生成式 OneRec 系列（已主站全量）+ 判别式 UniMixer（架构层探索）+ <strong>推荐 Reasoning OneReason</strong>（2026.6 <strong>单点业务验证</strong>）</td>
+          <td><span style="color:var(--purple);">激进-务实-Reasoning 三轨</span></td>
+          <td>停留时长+1.6% (OneRec, 主站全量) · 曝光+10.33%/收入+8.234% (OneReason, <strong>仅本地生活广告 5%×5%</strong>)</td>
+          <td><strong>Reasoning 范式首次验证</strong></td>
         </tr>
         <tr>
           <td><span class="tag tag-v">字节/抖音</span></td>
@@ -2068,10 +2071,10 @@ graph TB
     K2 -.-> PROM["（快手）PROMISE 2025 信息瓶颈"]
 
     %% 2026.6: OneReason 全新开辟
-    K1 -.-> ONER["（快手）OneReason 2026.6<br/>推荐 Reasoning · arXiv:2606.06260"]
+    K1 -.-> ONER["（快手）OneReason 2026.6<br/>推荐 Reasoning 首次验证 · arXiv:2606.06260<br/>**8B 仅做离线召回**"]
     K1 -.-> OPENO["（快手）OpenOneRec 2026<br/>OneReason 前代 · 160B token"]
-    ONER -.-> FAST["Fast-Slow Thinking 部署<br/>Slow 近线 + Fast 在线"]
-    FAST -.-> AGENT["Agentic Recommender Harness<br/>2026 H2 下一站演进"]
+    ONER -.-> FAST["Fast-Slow Thinking 部署<br/>Slow 近线 + Fast 在线蒸馏<br/>**主链路仍是 ranker**"]
+    FAST -.-> AGENT["Agentic Recommender Harness<br/>2026 H2+ future work · 尚未落地"]
 
     %% 新增：小红书LASER、LinkedIn Feed-SR、京东OxygenREC
     LASER["（小红书）LASER 2026 长序列全栈"]
@@ -2142,9 +2145,10 @@ graph TB
         作为特征增强嵌入现有系统 · 不改变推荐范式
       </div>
       <div class="card" style="padding:12px 14px; font-size:clamp(0.88em,1.05vw,1.15em); border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.05);">
-        <strong style="color:#fb923c;">推荐Reasoning路线 <span class="badge badge-new">NEW 2026.6</span></strong><br/>
+        <strong style="color:#fb923c;">推荐Reasoning路线 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">NEW 2026.6 · 首次验证</span></strong><br/>
         <strong>快手OneReason (arXiv:2606.06260)</strong><br/>
-        578B token 四层预训练 + 推荐专属CoT + GRPO改进 + Fast-Slow Thinking
+        578B token 四层预训练 + 推荐专属CoT + GRPO改进 + Fast-Slow Thinking<br/>
+        <span style="color:var(--text-muted); font-size:0.92em;">**8B 本体只做离线召回（Slow Pipeline），主链路仍是蒸馏版 OneRec + 既有 ranker**。本地生活广告 5%×5% A/B 是 Fast+Slow 合计收益。距"分水岭"还有相当距离。</span>
       </div>
     </div>
   </div>
@@ -2211,12 +2215,12 @@ graph TD
     </div>
     <div class="model-card" style="border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.06);">
       <div class="model-name">OneReason <span class="badge badge-new">NEW 2026.6</span></div>
-      <div class="model-org">快手 · <strong style="color:#fb923c;">推荐 Reasoning 路线（全新开辟）</strong></div>
-      <div class="model-contrib">578B token 四层预训练 (Token/Item/Relational/User) + 推荐专属CoT (Persona Abstraction → Interest Expansion → Transition Inference) + GRPO三方面改进 + "先专后合"训练链路 + Fast-Slow Thinking双轨部署。<strong style="color:#fb923c;">本地生活广告曝光+10.33%/收入+8.234%</strong>，Pass@4 thinking领先non-thinking +13.45%。arXiv:2606.06260。</div>
+      <div class="model-org">快手 · <strong style="color:#fb923c;">推荐 Reasoning 路线（首次验证）</strong></div>
+      <div class="model-contrib">578B token 四层预训练 (Token/Item/Relational/User) + 推荐专属CoT (Persona Abstraction → Interest Expansion → Transition Inference) + GRPO三方面改进 + "先专后合"训练链路 + Fast-Slow Thinking双轨部署。<strong style="color:#fb923c;">本地生活广告 5%×5% A/B 曝光+10.33%/收入+8.234%</strong>（Fast+Slow合计），Pass@4（<strong>离线</strong>）thinking领先non-thinking +13.45%。<strong style="color:#fb923c;">8B 本体只做离线召回，主链路仍是蒸馏版 OneRec + 既有 ranker</strong>。arXiv:2606.06260。</div>
     </div>
   </div>
   <div class="highlight-box" style="margin-top:10px;">
-    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">三线并行战略：</strong>快手是"激进-务实-Reasoning 三轨推进"的典型代表。<strong style="color:var(--green);">生成式路线</strong> OneRec 系列端到端生成；<strong style="color:var(--purple);">判别式 Scaling 路线</strong> UniMixer 统一架构；<strong style="color:#fb923c;">推荐 Reasoning 路线</strong> OneReason 全新开辟。OneReason 不是 UniMixer 的替代，而是与生成式 OneRec、判别式 UniMixer 并行的第三条战线，也是 Agentic Recommender 的前置地基。</p>
+    <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="a">客观战略描述：</strong>快手是"激进-务实-Reasoning 三轨推进"的典型代表，但<strong>三条线的业务权重和成熟度差异很大</strong>：<strong style="color:var(--green);">生成式路线</strong> OneRec 系列（<strong>已主站全量</strong>，停留时长+1.6% 是大规模主流量数据）；<strong style="color:var(--purple);">判别式 Scaling 路线</strong> UniMixer（<strong>架构层探索</strong>，arXiv:2604.00590，线上效果数据未公开）；<strong style="color:#fb923c;">推荐 Reasoning 路线</strong> OneReason（<strong>单点业务验证</strong>，仅本地生活广告 5%×5% 流量）。三者不宜简单并列说"三线并行"，OneReason 距离真正的"基模替代"还有相当距离。</p>
   </div>
 </div>
 
@@ -2432,8 +2436,8 @@ graph TD
       <tbody>
         <tr style="background:rgba(52,211,153,0.04);">
           <td><span class="tag tag-g">已上线验证</span></td>
-          <td>快手OneRec, Meta GR, 字节RankMixer, <strong style="color:#fb923c;">快手OneReason</strong></td>
-          <td>停留时长+0.5~1.2%, 订单+1.66%, <strong style="color:#fb923c;">本地生活广告曝光+10.33%/收入+8.234%</strong></td>
+          <td>快手OneRec, Meta GR, 字节RankMixer, <strong style="color:#fb923c;">快手OneReason（<strong>单点业务</strong>）</strong></td>
+          <td>停留时长+0.5~1.2%, 订单+1.66%, <strong style="color:#fb923c;">本地生活广告曝光+10.33%/收入+8.234%</strong>（<strong style="color:#fb923c;">Fast+Slow 合计</strong>，<strong>仅本地生活广告 5%×5%</strong>）</td>
           <td>GuoXun、王喆等认可</td>
         </tr>
         <tr style="background:rgba(34,211,238,0.04);">
@@ -2459,7 +2463,7 @@ graph TD
   </div>
 <div class="highlight-box" style="margin-top:12px;">
     <p style="font-size:clamp(0.88em,1.05vw,1.15em);"><strong class="c">2026年前沿方向：</strong>显式稀疏性(阿里SSR) · 序列训练策略(GRAB) · 信息瓶颈理论(UniMixer) · 状态空间模型(SUAN/Mamba) · LLM推荐Scaling Law(首个幂律验证) · <strong style="color:#fb923c;">推荐 Reasoning（OneReason 四层语义对齐 + 推荐专属 CoT + GRPO 改进）</strong></p>
-    <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式 OneRec 转向判别式 UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU；<strong style="color:#fb923c;">快手 OneReason 开辟推荐 Reasoning 第五路线，thinking 模式首次稳定超越 non-thinking</strong>。</p>
+    <p style="font-size:clamp(0.85em,1.0vw,1.1em); margin-top:6px; color:var(--text-secondary);"><strong>关键趋势：</strong>快手从生成式 OneRec 转向判别式 UniMixer；字节全程判别式Scaling；Meta坚持生成式GR路线持续深耕ULTRA-HSTU；<strong style="color:#fb923c;">快手 OneReason 首次验证推荐 Reasoning 范式（<strong>单点业务，8B 本体只做离线召回</strong>），thinking 模式在离线 Pass@4 上首次稳定超越 non-thinking（+13.45%）</strong>。</p>
   </div>
 </div>
 
@@ -2492,7 +2496,7 @@ graph TD
     </div>
     <div class="toc-item" style="border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
       <div style="background:rgba(251,146,60,0.2); color:#fb923c; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; font-size:clamp(0.88em,1.05vw,1.15em);">6</div>
-      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">推荐 Reasoning 进入工业落地阶段 <span class="badge badge-new">NEW 2026.6</span></span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">快手 OneReason（arXiv:2606.06260）首次在工业级推荐场景让 thinking 模式稳定超过 non-thinking 模式（Pass@4 +13.45%）；Fast-Slow Thinking 双轨架构成为推理式推荐落地新范式；本地生活广告曝光 +10.33%/收入 +8.234% 验证商业可行性；Agentic Recommender Harness 是下一站演进方向</span></div>
+      <div style="margin-left:12px;"><span style="color:var(--text-primary); font-weight:600;">推荐 Reasoning 首次工业级探索 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">NEW 2026.6 · 单点业务</span></span><br/><span style="color:var(--text-muted); font-size:clamp(0.88em,1.05vw,1.15em);">快手 OneReason（arXiv:2606.06260）首次在工业级推荐场景让 thinking 模式在离线 Pass@4 上稳定超过 non-thinking 模式（+13.45%）；Fast-Slow Thinking 双轨架构成为推理式推荐落地的工程折中方案；本地生活广告 5%×5%×10天 A/B 曝光 +10.33% / 收入 +8.234%（**Fast+Slow 合计**，非纯 thinking 模式贡献）。**注意**：OneReason-8B 本体只做离线召回，主链路仍是蒸馏版 OneRec + 既有 ranker；Agentic Recommender Harness 是论文 §11 future work。距"分水岭"还有相当距离。</span></div>
     </div>
   </div>
 </div>
@@ -2523,10 +2527,10 @@ graph TD
     </div>
     <div class="card" style="border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
       <div style="font-size:1.4em; margin-bottom:8px;">🧠</div>
-      <h3 style="color:#fb923c;">Reasoning 支撑（新方向）<span class="badge badge-new">NEW</span></h3>
-      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">GRPO 改进训练算子 · 多阶段 SFT pipeline · Fast-Slow Thinking 部署框架 · Agentic Recommender Harness</p>
-      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>2026 H2</div>
-      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:#fb923c;"><strong>优先级：</strong>P1（差异化竞争点）</div>
+      <h3 style="color:#fb923c;">Reasoning 探索（远期方向）<span class="badge badge-new">P2 探索</span></h3>
+      <p style="font-size:clamp(0.88em,1.05vw,1.15em); margin-bottom:10px;">GRPO 改进训练算子 · 多阶段 SFT pipeline · Fast-Slow Thinking 部署框架 · Agentic Recommender Harness<br/><span style="color:var(--text-muted); font-size:0.85em;">（注：OneReason 实际只做离线召回，Reasoning 推理内核适配应以"工程折中方案"为定位，不宜作为 P1 投入）</span></p>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:var(--text-muted);"><strong>时间：</strong>2026 H2+</div>
+      <div style="font-size:clamp(0.88em,1.05vw,1.15em); color:#fb923c;"><strong>优先级：</strong>P2 探索级（避免过早投入）</div>
     </div>
     <div class="card card-g">
       <div style="font-size:1.4em; margin-bottom:8px;">📡</div>
@@ -2587,16 +2591,16 @@ graph TD
           <td>建立快速跟进机制不掉队</td>
         </tr>
         <tr style="background:rgba(251,146,60,0.06);">
-          <td><strong style="color:#fb923c;">Reasoning 基模推理支撑能力</strong><span class="badge badge-new">NEW</span></td>
-          <td><span class="tag tag-a">P1 Q4</span></td>
-          <td>支持 OneReason 类推荐 Reasoning 基模完整推理链</td>
-          <td>GRPO 改进训练算子 + 多阶段 SFT pipeline + Fast-Slow Thinking 部署框架</td>
+          <td><strong style="color:#fb923c;">Reasoning 基模推理支撑能力</strong><span class="badge badge-new">P2 探索</span></td>
+          <td><span class="tag tag-a">P2 探索</span></td>
+          <td>支持 OneReason 类推荐 Reasoning 基模离线召回+蒸馏训练（**主链路仍是 ranker，不进入在线推理**）</td>
+          <td>GRPO 改进训练算子 + 多阶段 SFT pipeline + Fast-Slow Thinking 部署框架（**定位为工程折中方案**）</td>
         </tr>
         <tr style="background:rgba(251,146,60,0.06);">
-          <td><strong style="color:#fb923c;">Agentic Recommender Harness 原型</strong><span class="badge badge-new">NEW</span></td>
-          <td><span class="tag tag-a">P2 探索</span></td>
-          <td>抢占下一代 Agentic 推荐系统技术高地</td>
-          <td>规划+工具调用+长程对话推荐的昇腾原生支持</td>
+          <td><strong style="color:#fb923c;">Agentic Recommender Harness 原型</strong><span class="badge badge-new">P3 观望</span></td>
+          <td><span class="tag tag-a">P3 观望</span></td>
+          <td>论文 §11 提的 future work，<strong>尚无工业级落地</strong>，避免过早投入</td>
+          <td>规划+工具调用+长程对话推荐的昇腾原生支持（**待 2026 H2+ 业界更明确信号**）</td>
         </tr>
       </tbody>
     </table>
