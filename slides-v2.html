@@ -2192,27 +2192,31 @@ graph TD
     style UM fill:#1e1b4b,stroke:#a78bfa,color:#ddd6fe
     </div>
   </div>
-  <div class="grid grid-4" style="margin-top:12px; gap:10px;">
-    <div class="model-card">
-      <div class="model-name">QARM <span class="badge badge-new">2024.11</span></div>
-      <div class="model-org">快手</div>
-      <div class="model-contrib">多模态对齐：用推荐任务的真实行为pair微调MLLM，解决Representation Unmatching和Unlearning问题。</div>
+  <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
+    <!-- 第 1 行:4 个核心工作(均分) -->
+    <div class="grid grid-4" style="gap:10px;">
+      <div class="model-card">
+        <div class="model-name">QARM <span class="badge badge-new">2024.11</span></div>
+        <div class="model-org">快手</div>
+        <div class="model-contrib">多模态对齐：用推荐任务的真实行为pair微调MLLM，解决Representation Unmatching和Unlearning问题。</div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">OneRec <span class="badge badge-new">2025.2</span></div>
+        <div class="model-org">快手</div>
+        <div class="model-contrib">端到端生成式推荐，RQ-Kmeans + Session-wise + IPA对齐。<strong style="color:var(--green);">停留时长+1.6%</strong>，核心指标100%正向。</div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">OneRec-V2 <span class="badge badge-new">2025.8</span></div>
+        <div class="model-org">快手</div>
+        <div class="model-contrib">Lazy Decoder架构：编码资源97.66%→2.34%，计算量↓94%，训练资源↓90%。<strong style="color:var(--green);">MFU 62%</strong>，成功扩展至8B参数。</div>
+      </div>
+      <div class="model-card">
+        <div class="model-name">UniMixer <span class="badge badge-new">2026.4</span></div>
+        <div class="model-org">快手 · 判别式 Scaling 路线</div>
+        <div class="model-contrib">判别式Scaling统一架构：统一注意力/TokenMixer/FM三种Scaling块。<strong style="color:var(--purple);">从激进生成式→务实判别式</strong>。</div>
+      </div>
     </div>
-    <div class="model-card">
-      <div class="model-name">OneRec <span class="badge badge-new">2025.2</span></div>
-      <div class="model-org">快手</div>
-      <div class="model-contrib">端到端生成式推荐，RQ-Kmeans + Session-wise + IPA对齐。<strong style="color:var(--green);">停留时长+1.6%</strong>，核心指标100%正向。</div>
-    </div>
-    <div class="model-card">
-      <div class="model-name">OneRec-V2 <span class="badge badge-new">2025.8</span></div>
-      <div class="model-org">快手</div>
-      <div class="model-contrib">Lazy Decoder架构：编码资源97.66%→2.34%，计算量↓94%，训练资源↓90%。<strong style="color:var(--green);">MFU 62%</strong>，成功扩展至8B参数。</div>
-    </div>
-    <div class="model-card">
-      <div class="model-name">UniMixer <span class="badge badge-new">2026.4</span></div>
-      <div class="model-org">快手 · 判别式 Scaling 路线</div>
-      <div class="model-contrib">判别式Scaling统一架构：统一注意力/TokenMixer/FM三种Scaling块。<strong style="color:var(--purple);">从激进生成式→务实判别式</strong>。</div>
-    </div>
+    <!-- 第 2 行:OneReason 跨整行(强调最新+最特殊) -->
     <div class="model-card" style="border-color:rgba(251,146,60,0.5); background:rgba(251,146,60,0.06);">
       <div class="model-name">OneReason <span class="badge badge-new">NEW 2026.6</span></div>
       <div class="model-org">快手 · <strong style="color:#fb923c;">推荐 Reasoning 路线（首次验证）</strong></div>
