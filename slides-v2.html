@@ -1809,118 +1809,105 @@ Self-Attention: O(n²) 复杂度<br/>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- Slide 17b: OneReason 详解 -->
+<!-- Slide 17b: OneReason 详解 + 路线五源流 + R0-R3 能力栈 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="slide" id="slide-17b">
   <div class="section-label">OneReason · 快手 <span class="badge badge-new">NEW 2026.6</span></div>
   <h2>OneReason：推荐 Reasoning 早期探索 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">单点业务验证</span></h2>
-  <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-    <div class="paper-ref" style="padding:6px 12px;">
-      <div class="title" style="font-size:clamp(0.82em,0.95vw,1.1em);">OneReason：当推荐系统学会思考</div>
-      <div class="meta" style="font-size:clamp(0.7em,0.82vw,0.92em);">快手 · arXiv:2606.06260 · 2026.6.9 · 0.8B 参数（Qwen3-8B 基础上）· 首次在工业级推荐场景验证"先思考再推荐"可行性</div>
+  <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+    <div class="paper-ref" style="padding:5px 10px;">
+      <div class="title" style="font-size:clamp(0.78em,0.92vw,1.05em);">OneReason：当推荐系统学会思考（OneReason Technical Report）</div>
+      <div class="meta" style="font-size:clamp(0.66em,0.78vw,0.88em);">快手 · arXiv:2606.06260 · 2026.6.9 · 0.8B 参数（Qwen3-8B 基础上）· 首次在工业级推荐场景验证"先思考再推荐"可行性</div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
-        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">① 四层语义对齐预训练</strong>
-        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
-          Token / Item / Relational / User 四层数据逐级打通 item-text 语义关联（解决 OneRec-Think/OpenOneRec "thinking 反而 hurts" 根因）
+    <!-- 上方：路线五的源流 四步迭代 -->
+    <div class="card" style="padding:6px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+      <strong style="color:#fb923c; font-size:clamp(0.74em,0.88vw,0.98em);">路线五的源流：R4ec → OneRec-Think → OpenOneRec → OneReason（四步迭代）</strong>
+      <div style="font-size:clamp(0.66em,0.78vw,0.88em); color:var(--text-secondary); margin-top:3px; line-height:1.5;">
+        <div style="display:grid; grid-template-columns:1.2fr 0.7fr 0.5fr 0.6fr; gap:4px; margin-top:3px;">
+          <div><strong style="color:var(--amber);">R4ec</strong>（arXiv:2507.17249 / RecSys 2025）<br/>Actor+Reflection 双 LLM 反思 · <strong style="color:var(--green);">+2.2% 收入</strong>（10% 流量×14天）</div>
+          <div><strong style="color:var(--amber);">OneRec-Think</strong>（arXiv:2510.11639）<br/>In-Text Reasoning · 停留 +0.159%（1.29%流量）</div>
+          <div><strong style="color:var(--amber);">OpenOneRec</strong>（arXiv:2512.24762）<br/>RecIF-Bench · 1.7B/8B 开源</div>
+          <div><strong style="color:#fb923c;">OneReason</strong>（arXiv:2606.06260）<br/>R0-R3 能力栈 · <strong style="color:var(--green);">+8.23% 收入</strong>（10天 A/B）</div>
         </div>
-      </div>
-      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
-        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">② 推荐专属 CoT 三段式</strong>
-        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
-          Persona Abstraction（20类画像）→ Interest Expansion（n=1/3/5 最佳）→ Transition Inference（多维评估）
-        </div>
-      </div>
-      <div class="card" style="padding:8px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
-        <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">③ GRPO 改进 + 先专后合</strong>
-        <div style="font-size:clamp(0.7em,0.82vw,0.92em); color:var(--text-secondary); margin-top:3px; line-height:1.4;">
-          两阶段轨迹 + Set-wise 奖励 + 优化稳定策略；RL 是解锁推理收益必备（SFT 后 Delta LL 全负 → RFT 后全正）
-        </div>
+        <div style="margin-top:4px; font-size:clamp(0.66em,0.78vw,0.86em); color:var(--amber);"><strong>根因：</strong>"thinking 反而 hurts" 来自 itemic token 缺少自然语言语义锚定（Why Thinking Hurts, arXiv:2506.00007，归因到"通用子空间的文本惯性"）</div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-      <div style="display:flex; flex-direction:column; gap:4px;">
-        <h4 style="font-size:clamp(0.78em,0.92vw,1.02em); margin-bottom:2px;">四层预训练数据架构</h4>
-        <div class="mermaid-container" style="margin:0; padding:4px; width:100%; overflow:hidden; height:160px;">
-          <div class="mermaid" style="font-size:0.55em; transform:scale(0.85); transform-origin:center center; line-height:1.3;">
-graph TD
-    T["Token 粒度<br/>子Token拆解"]
-    I["Item 粒度<br/>物料粗粒化QA"]
-    R["Relational 粒度<br/>物品→兴趣→后续"]
-    U["User 粒度<br/>分域分组全时序"]
-    T --> PT["预训练 578B token"]
-    I --> PT
-    R --> PT
-    U --> PT
-    PT --> SFT["SFT 推荐专属CoT"]
-    SFT --> RL["RL GRPO改进"]
-    RL --> DEP["Fast-Slow Thinking部署"]
-    style T fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style I fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style R fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style U fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style PT fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
-    style SFT fill:#022c22,stroke:#34d399,color:#6ee7b7
-    style RL fill:#1e1b4b,stroke:#a78bfa,color:#c4b5fd
-    style DEP fill:#022c22,stroke:#22d3ee,color:#6ee7b7
-          </div>
-        </div>
-        <div class="code-block" style="font-size:clamp(0.65em,0.78vw,0.85em); padding:6px 10px; line-height:1.45;">
-<span style="color:#94a3b8">// 预训练 578B token 三阶段：</span>预热 110B → 全参 449B → 长序列 19B(32K窗口)
-<span style="color:#94a3b8">// SFT 3.86M：</span>R0 941K + R1 400K + R2 130K + R3 885K + Itemic 103K + 通用 1.5M
-<span style="color:#94a3b8">// RL：</span>两阶段轨迹 + Set-wise奖励 + 优化稳定 → RFT/MOPD融合
+    <!-- R0-R3 能力栈 + 三大核心技术 -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px;">
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">R0 感知 Perception</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Item Understanding / Pattern Grounding / Item QA<br/><span style="color:var(--amber);">模型能否把 itemic token 锚定到自然语言语义</span>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:4px;">
-        <h4 style="font-size:clamp(0.78em,0.92vw,1.02em); margin-bottom:2px;">R3 推荐 CoT 三段式</h4>
-        <div class="mermaid-container" style="margin:0; padding:4px; width:100%; overflow:hidden; height:160px;">
-          <div class="mermaid" style="font-size:0.55em; transform:scale(0.85); transform-origin:center center; line-height:1.3;">
-graph LR
-    A["Persona Abstraction<br/>用户抽象 20类画像"] --> B["Interest Expansion<br/>兴趣发散 n=1/3/5最佳"]
-    B --> C["Transition Inference<br/>兴趣推断 多维评估"]
-    C --> D["推荐结果"]
-    A -.- A1["家庭主妇/直播购物<br/>共享设备用户"]
-    B -.- B1["少即是多<br/>n=10/20衰减"]
-    C -.- C1["证据+近期+连贯<br/>+画像匹配"]
-    style A fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style B fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style C fill:#7c2d12,stroke:#fb923c,color:#fed7aa
-    style D fill:#022c22,stroke:#34d399,color:#6ee7b7
-    style A1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
-    style B1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
-    style C1 fill:#1e293b,stroke:#94a3b8,color:#cbd5e1
-          </div>
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">R1 推导 Derivation</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Item2Item 一跳关联（6 bridge variables 锁死跳点）<br/><span style="color:var(--amber);">R1 QA 0%→29.7%</span>（加 User 粒度）
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
-          <div class="card" style="padding:5px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.05);">
-            <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">Fast-Slow Thinking</strong>
-            <div style="font-size:clamp(0.66em,0.78vw,0.88em); color:var(--text-secondary); margin-top:2px; line-height:1.35;">
-              Slow 近线：完整 OneReason 离线召回；Fast 在线：蒸馏版快思考
-            </div>
-          </div>
-          <div class="card" style="padding:5px 8px; border-color:rgba(34,211,238,0.4); background:rgba(34,211,238,0.05);">
-            <strong style="color:var(--cyan); font-size:clamp(0.72em,0.85vw,0.95em);">下一站：Agentic</strong>
-            <div style="font-size:clamp(0.66em,0.78vw,0.88em); color:var(--text-secondary); margin-top:2px; line-height:1.35;">
-              推荐基模具备规划/工具调用/长程对话能力
-            </div>
-          </div>
+      </div>
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">R2 演变 Evolution</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Action Selection / Topic Generation / Direct Generation<br/><span style="color:var(--amber);">Cross-Live 3.25%→8.56%</span>
+        </div>
+      </div>
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.72em,0.85vw,0.95em);">R3 推荐 Recommendation</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Single-Domain / Cross-Domain 综合决策<br/><span style="color:var(--amber);">Pass@64 4 域 thinking 稳定 > non-thinking</span>
         </div>
       </div>
     </div>
 
-    <div class="card" style="padding:8px 12px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.06);">
-      <strong style="color:#fb923c; font-size:clamp(0.8em,0.95vw,1.05em);">业务收益（快手本地生活广告 10 天 A/B · 5% vs 5%）</strong>
-      <div style="font-size:clamp(0.65em,0.78vw,0.85em); color:var(--text-muted); margin-top:3px; margin-bottom:5px;">
-        **线上 A/B（Fast+Slow 合计）**：范式A曝光+0.94%/收入+4.53% + 范式B曝光+6.83%/收入+4.64% = 合计 +10.33%/+8.23%。OneReason-8B 本体只做离线召回（Slow Pipeline），主链路仍是蒸馏版 OneRec + 既有 ranker。
+    <!-- 三大方法论 -->
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.74em,0.88vw,0.98em);">① 四层语义对齐预训练</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Token / Item / Relational / User 逐级打通 item-text 关联；解决 thinking hurts 根因
+        </div>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; margin-top:6px;">
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+10.33%</div><div class="stat-label">曝光（线上 A/B）</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">+8.23%</div><div class="stat-label">收入（线上 A/B）</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:var(--text-muted); font-size:clamp(1.1em,1.5vw,1.7em);">+13.45%</div><div class="stat-label" style="color:var(--text-muted);">Pass@4（<strong>离线</strong>）</div></div>
-        <div class="stat-box" style="padding:6px 8px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1.1em,1.5vw,1.7em);">ROI > 5</div><div class="stat-label">600卡/4亿用户</div></div>
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.74em,0.88vw,0.98em);">② 推荐专属 CoT 三段式</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          Persona Abstraction → Interest Expansion（n=1/3/5 少即是多）→ Transition Inference（5 维约束）
+        </div>
+      </div>
+      <div class="card" style="padding:6px 8px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.04);">
+        <strong style="color:#fb923c; font-size:clamp(0.74em,0.88vw,0.98em);">③ GRPO 三机制 + 先专后合</strong>
+        <div style="font-size:clamp(0.62em,0.74vw,0.84em); color:var(--text-secondary); margin-top:2px; line-height:1.4;">
+          两阶段 Rollout / 阶段感知裁剪（推理宽松·物品严格）/ 负样本降权；RFT vs MOPD（reverse-KL mode-seeking）
+        </div>
+      </div>
+    </div>
+
+    <!-- 同期业界多路探索 -->
+    <div class="card" style="padding:5px 10px; background:rgba(0,0,0,0.15);">
+      <strong style="color:var(--text-muted); font-size:clamp(0.7em,0.82vw,0.92em); text-transform:uppercase; letter-spacing:1px;">同期业界对推荐 Reasoning 的多路探索（2025.04 ~ 2026.05）</strong>
+      <div style="font-size:clamp(0.6em,0.7vw,0.8em); color:var(--text-secondary); margin-top:2px; line-height:1.5; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+        <div><strong style="color:var(--cyan);">ReaRec</strong>（人大 x 阿里，2025.04）<br/>K 步隐式推理；+3.51% 延迟下 <strong style="color:var(--green);">+7.49% 推荐</strong>；30-50% 提升空间</div>
+        <div><strong style="color:var(--cyan);">OnePiece</strong>（傅聪 x 人大，Shopee，2025.09）<br/>上下文工程 + 隐式推理；<strong style="color:var(--green);">Search 全流量生效</strong>；HF Paper 前三</div>
+        <div><strong style="color:var(--cyan);">阿里 AMEN</strong>（2025）<br/>Next Interest Flow；淘宝信息流 <strong style="color:var(--green);">GMV +11.24%</strong>（不显式 CoT）</div>
+        <div><strong style="color:var(--cyan);">CQ-SID</strong>（阿里/天猫，arXiv:2605.14434）<br/>GR 当补充通道；EG-GRPO；搜索场景</div>
+        <div><strong style="color:var(--cyan);">UniVA</strong>（腾讯/视频号广告，arXiv:2605.05803）<br/>eCPM-aware RL；价值侧 SID 新基线</div>
+        <div><strong style="color:var(--cyan);">Why Thinking Hurts</strong>（arXiv:2506.00007）<br/>诊断思考 hurts 根因 — 文本惯性</div>
+      </div>
+    </div>
+
+    <!-- 部署架构 + 业务收益 -->
+    <div class="card" style="padding:6px 10px; border-color:rgba(251,146,60,0.4); background:rgba(251,146,60,0.06);">
+      <strong style="color:#fb923c; font-size:clamp(0.74em,0.88vw,0.98em);">业务收益（快手本地生活广告 10 天 A/B · 5% vs 5% · Fast+Slow 合计）</strong>
+      <div style="font-size:clamp(0.6em,0.7vw,0.8em); color:var(--text-muted); margin-top:2px; margin-bottom:4px;">
+        范式A曝光+0.94%/收入+4.53% + 范式B曝光+6.83%/收入+4.64% = 合计 +10.33%/+8.23%。OneReason-8B 本体只做离线召回，主链路仍是蒸馏版 OneRec + 既有 ranker。
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:4px;">
+        <div class="stat-box" style="padding:4px 6px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1em,1.4vw,1.6em);">+10.33%</div><div class="stat-label" style="font-size:clamp(0.6em,0.7vw,0.8em);">曝光（线上 A/B）</div></div>
+        <div class="stat-box" style="padding:4px 6px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1em,1.4vw,1.6em);">+8.23%</div><div class="stat-label" style="font-size:clamp(0.6em,0.7vw,0.8em);">收入（线上 A/B）</div></div>
+        <div class="stat-box" style="padding:4px 6px;"><div class="stat-num" style="color:var(--text-muted); font-size:clamp(1em,1.4vw,1.6em);">+13.45%</div><div class="stat-label" style="color:var(--text-muted); font-size:clamp(0.6em,0.7vw,0.8em);">Pass@4（<strong>离线</strong>）</div></div>
+        <div class="stat-box" style="padding:4px 6px;"><div class="stat-num" style="color:#fb923c; font-size:clamp(1em,1.4vw,1.6em);">ROI > 5</div><div class="stat-label" style="font-size:clamp(0.6em,0.7vw,0.8em);">600卡/4亿用户</div></div>
       </div>
     </div>
   </div>
