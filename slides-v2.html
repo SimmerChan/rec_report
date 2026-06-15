@@ -2676,6 +2676,12 @@ graph TD
   <button id="pageIndicator" style="min-width:80px;">1 / 28</button>
   <button onclick="next()" title="下一页">▶</button>
   <div class="divider"></div>
+  <button onclick="showShell('slide-0')" title="封面">ⓘ 封面</button>
+  <button onclick="showShell('slide-17b')" title="OneReason 详解">🧠 OneReason</button>
+  <button onclick="showShell('slide-33')" title="Q&A">❓ Q&A</button>
+  <div class="divider"></div>
+  <button onclick="dismissShell()" title="返回目录">⤺ 目录</button>
+  <div class="divider"></div>
   <button onclick="toggleFullscreen()" title="全屏">⛶</button>
   <button onclick="goStart()" title="首页">⏮</button>
   <button onclick="goEnd()" title="末页">⏭</button>
@@ -2749,22 +2755,22 @@ function toggleFullscreen() {
   else document.exitFullscreen();
 }
 
-// Cover page: show for 1.5s on first load, then auto-jump to TOC (slide-1)
-(function() {
-  const cover = document.getElementById('slide-0');
-  const toc = document.getElementById('slide-1');
-  if (!cover || !toc) return;
-  cover.classList.add('shown');
-  toc.classList.remove('active');
-  setTimeout(() => {
-    cover.classList.remove('shown');
-    toc.classList.add('active');
-    // Now trigger update() so progress bar / page indicator reflect slide-1
-    if (typeof update === 'function') update();
-  }, 1500);
-})();
+// Shell pages (cover, OneReason transition, Q&A) are explicitly controlled via nav buttons.
+// No auto-jump on load. Cover is NOT shown by default; user clicks "封面" to view.
 
 document.addEventListener('keydown', e => {
+  // If a shell page is currently shown, dismiss it and return to slide-1
+  const shownShell = document.querySelector('.slide-shell.shown');
+  if (shownShell) {
+    shownShell.classList.remove('shown');
+    // Make sure TOC is visible
+    const toc = document.getElementById('slide-1');
+    document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
+    if (toc) toc.classList.add('active');
+    current = 0;
+    update();
+    return;
+  }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
   else if (e.key === 'Home') goStart();
@@ -2772,6 +2778,24 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
   else if (e.key === ' ') { e.preventDefault(); next(); }
 });
+
+// showShell(id): hide all slides and any shown shell, then show the requested shell
+function showShell(id) {
+  document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.slide-shell.shown').forEach(s => s.classList.remove('shown'));
+  const shell = document.getElementById(id);
+  if (shell) shell.classList.add('shown');
+}
+
+// dismissShell(): hide any shown shell and return to TOC
+function dismissShell() {
+  document.querySelectorAll('.slide-shell.shown').forEach(s => s.classList.remove('shown'));
+  document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
+  const toc = document.getElementById('slide-1');
+  if (toc) toc.classList.add('active');
+  current = 0;
+  if (typeof update === 'function') update();
+}
 
 // Initial render with proper error logging
 document.querySelectorAll('.mermaid').forEach((m, i) => {
