@@ -35,16 +35,6 @@ body {
   overflow-y: auto;
 }
 .slide.active { display: flex; flex-direction: column; }
-/* Non-paginated containers: cover, intermediate detail, Q&A. Hidden by default; shown only when explicitly toggled. */
-.slide-shell {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  display: none; flex-direction: column;
-  padding: clamp(32px, 4vw, 100px) clamp(48px, 6vw, 140px);
-  background: linear-gradient(145deg, #020617 0%, #0f172a 40%, #0c1425 100%);
-  overflow-y: auto;
-}
-.slide-shell.shown { display: flex; }
-.slide-shell .section-label, .slide-shell h1, .slide-shell h2, .slide-shell h3, .slide-shell h4, .slide-shell p, .slide-shell li { /* Inherit typography */ }
 .slide.active::-webkit-scrollbar { width: 6px; }
 .slide.active::-webkit-scrollbar-track { background: transparent; }
 .slide.active::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
@@ -336,7 +326,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 0: 封面 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide-shell" id="slide-0">
+<div class="slide active" id="slide-0">
   <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
     <div class="section-label" style="margin-bottom:16px;">昇腾推荐团队 · 技术调研</div>
     <h1 class="cover-title">推荐算法演进与生成式推荐</h1>
@@ -344,7 +334,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     <div class="cover-meta" style="margin-top:24px;">
       <div class="meta-chip"><div class="label">受众</div><div class="value">昇腾推荐团队</div></div>
       <div class="meta-chip"><div class="label">日期</div><div class="value">2026年6月</div></div>
-      <div class="meta-chip"><div class="label">页数</div><div class="value">28页</div></div>
+      <div class="meta-chip"><div class="label">页数</div><div class="value">31页</div></div>
     </div>
     <div class="highlight-box" style="margin-top:32px; max-width:720px;">
       <p style="font-size:clamp(0.9em, 1.1vw, 1.4em);"><span class="c">■</span> 推荐系统演进：判别式 Scaling（成熟） + 语义 ID 生成式（已主流量）双轨并行 · Transformer 统一主干取代级联 · 推理效率与训推一体是下一阶段工程重心</p>
@@ -356,7 +346,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 1: 目录 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide active" id="slide-1">
+<div class="slide" id="slide-1">
   <div class="section-label">Agenda</div>
   <h2>汇报内容</h2>
   <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
@@ -366,7 +356,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="toc-title">推荐系统为什么正在经历 Scaling Law 驱动的新进化</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">三大瓶颈 · GPU利用率 · LLM破局</div>
       </div>
-      <div class="toc-pages">slide-3 ~ slide-6</div>
+      <div class="toc-pages">第 3 ~ 第 7 页</div>
     </div>
     <div class="toc-item" style="max-width:680px; width:100%;">
       <div class="toc-num">02</div>
@@ -374,7 +364,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="toc-title">推荐算法演进全景图</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">三条主线 · 算法分类 · 关键技术节点</div>
       </div>
-      <div class="toc-pages">slide-7 ~ slide-10</div>
+      <div class="toc-pages">第 8 ~ 第 11 页</div>
     </div>
     <div class="toc-item" style="max-width:680px; width:100%;">
       <div class="toc-num">03</div>
@@ -382,15 +372,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="toc-title">生成式推荐核心技术解析</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">Semantic ID · 超长序列 · 代表工作</div>
       </div>
-      <div class="toc-pages">slide-11 ~ slide-17</div>
+      <div class="toc-pages">第 12 ~ 第 18 页</div>
     </div>
     <div class="toc-item" style="max-width:680px; width:100%;">
       <div class="toc-num">04</div>
       <div>
         <div class="toc-title">大厂技术路线对比 2025-2026</div>
-        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">快手 · 字节 · 京东 · 阿里 · Meta</div>
+        <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">快手 · 字节 · 京东 · 阿里 · Meta · 含 OneReason 详解（第 19 页）</div>
       </div>
-      <div class="toc-pages">slide-18 ~ slide-22</div>
+      <div class="toc-pages">第 19 ~ 第 24 页</div>
     </div>
     <div class="toc-item" style="max-width:680px; width:100%;">
       <div class="toc-num">05</div>
@@ -398,7 +388,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="toc-title">工业落地挑战与共识</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">知乎讨论精华 · 工业分级 · 业界共识</div>
       </div>
-      <div class="toc-pages">slide-23 ~ slide-25</div>
+      <div class="toc-pages">第 25 ~ 第 27 页</div>
     </div>
     <div class="toc-item" style="max-width:680px; width:100%;">
       <div class="toc-num">06</div>
@@ -406,7 +396,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="toc-title">昇腾推荐团队行动建议</div>
         <div style="font-size:clamp(0.82em,0.95vw,1.05em); color:var(--text-muted); margin-top:2px;">迁移支撑 · 原生开发 · 生态跟进</div>
       </div>
-      <div class="toc-pages">slide-26 ~ slide-28</div>
+      <div class="toc-pages">第 28 ~ 第 30 页</div>
     </div>
   </div>
 </div>
@@ -1821,7 +1811,7 @@ Self-Attention: O(n²) 复杂度<br/>
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 17b: OneReason 详解 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide-shell" id="slide-17b">
+<div class="slide" id="slide-17b">
   <div class="section-label">OneReason · 快手 <span class="badge badge-new">NEW 2026.6</span></div>
   <h2>OneReason：推荐 Reasoning 早期探索 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">单点业务验证</span></h2>
   <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
@@ -2655,7 +2645,7 @@ graph TD
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 32: Q&A -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide-shell" id="slide-33">
+<div class="slide" id="slide-33">
   <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center;">
     <div style="font-size:5em; margin-bottom:20px;">❓</div>
     <h1 style="font-size:clamp(2em,3vw,3.5em); margin-bottom:20px;">Q & A</h1>
@@ -2673,14 +2663,8 @@ graph TD
 <!-- 导航 -->
 <div class="nav">
   <button onclick="prev()" title="上一页">◀</button>
-  <button id="pageIndicator" style="min-width:80px;">1 / 28</button>
+  <button id="pageIndicator" style="min-width:80px;">1 / 31</button>
   <button onclick="next()" title="下一页">▶</button>
-  <div class="divider"></div>
-  <button onclick="showShell('slide-0')" title="封面">ⓘ 封面</button>
-  <button onclick="showShell('slide-17b')" title="OneReason 详解">🧠 OneReason</button>
-  <button onclick="showShell('slide-33')" title="Q&A">❓ Q&A</button>
-  <div class="divider"></div>
-  <button onclick="dismissShell()" title="返回目录">⤺ 目录</button>
   <div class="divider"></div>
   <button onclick="toggleFullscreen()" title="全屏">⛶</button>
   <button onclick="goStart()" title="首页">⏮</button>
@@ -2755,22 +2739,10 @@ function toggleFullscreen() {
   else document.exitFullscreen();
 }
 
-// Shell pages (cover, OneReason transition, Q&A) are explicitly controlled via nav buttons.
-// No auto-jump on load. Cover is NOT shown by default; user clicks "封面" to view.
+// Shell pages have been merged into the 31-slide paginated flow.
+// No shell-specific key handling needed; standard pagination applies.
 
 document.addEventListener('keydown', e => {
-  // If a shell page is currently shown, dismiss it and return to slide-1
-  const shownShell = document.querySelector('.slide-shell.shown');
-  if (shownShell) {
-    shownShell.classList.remove('shown');
-    // Make sure TOC is visible
-    const toc = document.getElementById('slide-1');
-    document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
-    if (toc) toc.classList.add('active');
-    current = 0;
-    update();
-    return;
-  }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev();
   else if (e.key === 'Home') goStart();
@@ -2778,24 +2750,6 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'f' || e.key === 'F') toggleFullscreen();
   else if (e.key === ' ') { e.preventDefault(); next(); }
 });
-
-// showShell(id): hide all slides and any shown shell, then show the requested shell
-function showShell(id) {
-  document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.slide-shell.shown').forEach(s => s.classList.remove('shown'));
-  const shell = document.getElementById(id);
-  if (shell) shell.classList.add('shown');
-}
-
-// dismissShell(): hide any shown shell and return to TOC
-function dismissShell() {
-  document.querySelectorAll('.slide-shell.shown').forEach(s => s.classList.remove('shown'));
-  document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
-  const toc = document.getElementById('slide-1');
-  if (toc) toc.classList.add('active');
-  current = 0;
-  if (typeof update === 'function') update();
-}
 
 // Initial render with proper error logging
 document.querySelectorAll('.mermaid').forEach((m, i) => {
