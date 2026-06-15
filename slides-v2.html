@@ -35,6 +35,16 @@ body {
   overflow-y: auto;
 }
 .slide.active { display: flex; flex-direction: column; }
+/* Non-paginated containers: cover, intermediate detail, Q&A. Hidden by default; shown only when explicitly toggled. */
+.slide-shell {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: none; flex-direction: column;
+  padding: clamp(32px, 4vw, 100px) clamp(48px, 6vw, 140px);
+  background: linear-gradient(145deg, #020617 0%, #0f172a 40%, #0c1425 100%);
+  overflow-y: auto;
+}
+.slide-shell.shown { display: flex; }
+.slide-shell .section-label, .slide-shell h1, .slide-shell h2, .slide-shell h3, .slide-shell h4, .slide-shell p, .slide-shell li { /* Inherit typography */ }
 .slide.active::-webkit-scrollbar { width: 6px; }
 .slide.active::-webkit-scrollbar-track { background: transparent; }
 .slide.active::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
@@ -326,7 +336,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 0: 封面 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide active" id="slide-0">
+<div class="slide-shell" id="slide-0">
   <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
     <div class="section-label" style="margin-bottom:16px;">昇腾推荐团队 · 技术调研</div>
     <h1 class="cover-title">推荐算法演进与生成式推荐</h1>
@@ -346,7 +356,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 1: 目录 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-1">
+<div class="slide active" id="slide-1">
   <div class="section-label">Agenda</div>
   <h2>汇报内容</h2>
   <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
@@ -1811,7 +1821,7 @@ Self-Attention: O(n²) 复杂度<br/>
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 17b: OneReason 详解 -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-17b">
+<div class="slide-shell" id="slide-17b">
   <div class="section-label">OneReason · 快手 <span class="badge badge-new">NEW 2026.6</span></div>
   <h2>OneReason：推荐 Reasoning 早期探索 <span class="badge badge-new" style="background:rgba(251,191,36,0.15); color:#fb923c;">单点业务验证</span></h2>
   <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
@@ -2645,7 +2655,7 @@ graph TD
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- Slide 32: Q&A -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
-<div class="slide" id="slide-33">
+<div class="slide-shell" id="slide-33">
   <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; text-align:center;">
     <div style="font-size:5em; margin-bottom:20px;">❓</div>
     <h1 style="font-size:clamp(2em,3vw,3.5em); margin-bottom:20px;">Q & A</h1>
@@ -2738,6 +2748,21 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) document.documentElement.requestFullscreen();
   else document.exitFullscreen();
 }
+
+// Cover page: show for 1.5s on first load, then auto-jump to TOC (slide-1)
+(function() {
+  const cover = document.getElementById('slide-0');
+  const toc = document.getElementById('slide-1');
+  if (!cover || !toc) return;
+  cover.classList.add('shown');
+  toc.classList.remove('active');
+  setTimeout(() => {
+    cover.classList.remove('shown');
+    toc.classList.add('active');
+    // Now trigger update() so progress bar / page indicator reflect slide-1
+    if (typeof update === 'function') update();
+  }, 1500);
+})();
 
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next();
