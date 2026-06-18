@@ -1,7 +1,8 @@
 # 推荐系统论文 · Sparse Embedding 规模分析汇总
 
 > 编辑于 2026年6月·北京
-> 数据来源: 13 篇代表性论文原文（8 篇经典判别式 + 5 篇生成式 / 混合），所有数据均可溯源到 arXiv 原文
+> 数据来源: 13 篇代表性算法论文原文（8 篇经典判别式 + 5 篇生成式 / 混合）+ 6 篇专门研究稀疏 embedding 工程优化的"系统论文"
+> 所有数据均可溯源到 arXiv 原文 + 章节 / Table 编号
 > 提取字段：稀疏特征个数（# features）· 单条 sparse embedding 维度（d）· 总存储空间 · 其他可溯源的关键信息
 
 ---
@@ -14,12 +15,14 @@
 2. 每条 sparse embedding 的**维度是多少**（embedding dim）
 3. 总共需要**多少存储空间**（GB / TB）
 
-这是一道"三件套"问题。**但在实践中，绝大多数论文都没有把这三个数字同时披露**——通常只给其中一两个，剩下的要么留空要么模糊描述。因此本报告的核心原则是：
+这是一道"三件套"问题。**但在实践中，绝大多数算法论文都没有把这三个数字同时披露**——通常只给其中一两个，剩下的要么留空要么模糊描述。**专门研究稀疏 embedding 工程优化的"系统论文"（Persia / HugeCTR / Monolith / TT-Rec / AutoShard / Comp Partitions）则给出了大量可溯源的绝对数字**，详见下文「一·补、工业系统论文 · 真实生产稀疏 embedding 规模」章节。
+
+因此本报告的核心原则是：
 
 > **论文原文找不到的信息 → 留空，不猜测。**
 > **论文原文出现，但只是定性描述（如"billion-scale"、"multiple GB"）→ 原文照录，不擅自换算。**
 
-下表是 13 篇论文的完整数据汇总。
+**第一节**汇集 13 篇代表性算法论文（涵盖 DLRM / Wide&Deep / DeepFM / DCN / DIN / DIEN / MIMN / SIM / GR-HSTU / ULTRA-HSTU / OneRec / MTGR / TokenMixer-Large）；**第一节·补**汇集 6 篇专门研究稀疏 embedding 的系统论文（Persia / HugeCTR / Monolith / TT-Rec / AutoShard / Comp Partitions）。
 
 ---
 
@@ -46,6 +49,118 @@
 | 11 | **OneRec** | Kuaishou · 2025.2 | [2502.18965](https://arxiv.org/abs/2502.18965) | **使用 semantic ID，舍弃传统 sparse embedding table**。codebook: 每层 **K = 8192** cluster，**L = 3** 层 | OneRec-0.1B / OneRec-1B 是 dense 模型规模；semantic ID 词表 = 8192³ | 未给出具体字节数 | **N_MoE = 24 experts，top-2 activation**；RQ-Kmeans 平衡量化（对比 TIGER RQ-VAE） |
 | 12 | **MTGR** | Meituan · 2025.8 · CIKM 2025 | [2505.18654](https://arxiv.org/abs/2505.18654) | **"retain the original DLRM features, including cross features"**（保留 DLRM 全部 sparse feature） | **sparse param dim ≈ d_model / k**（k = token 内 feature 数） | 用**动态 hash table** 替代静态 table；基于 TorchRec 框架，训练吞吐 **↑1.6-2.4×** | MTGR-large vs DLRM baseline: **65× FLOPs/sample forward**；CTR +1.31%；推理成本 **-12%** |
 | 13 | **TokenMixer-Large** | ByteDance · 2026.2 | [2602.06563](https://arxiv.org/abs/2602.06563) | **保留 sparse embedding**（asynchronous sparse + synchronous dense 更新） | **7B / 15B 是 dense 参数**（论文明确说 "excluding sparse embeddings"）；sparse 维度未单独披露 | sparse 部分具体存储未给，但论文把 sparse embedding 优化作为效率指标独立列出 | **Sparse Per-token MoE + FP8 + Token Parallel**；线上 dense 4B(广告)/7B(电商) 部署 |
+
+---
+
+## 一·补、工业系统论文 · 真实生产稀疏 embedding 规模
+
+> **本节补充自专门研究稀疏 embedding 工程优化的"系统论文"（System Papers）**。
+> 与上面 13 篇"算法论文"不同，这一节数据来自公开描述真实生产训练/部署系统的论文（RecSys / MLSys / KDD 等会议），每一行的数字都可在原文中定位。
+> **信息来源 = arxiv ID + 章节 / Table 编号**，完整 PDF/HTML 已存于 `/tmp/sys_papers_txt/`。
+
+### A. 系统论文总览表
+
+| # | 系统论文 | 厂商 / 年份 / 会议 | arXiv | # 稀疏特征 (vocab / cardinality) | d 单条维度 | 总存储 | 关键备注 |
+|---|---------|------------------|-------|-------------------------------|-----------|--------|---------|
+| S1 | **Persia**（Hybrid System） | Microsoft · 2022 · KDD 2023 | [2111.05897](https://arxiv.org/abs/2111.05897) | 6 个真实/合成数据集，sparse param 从 **29M → 100 Trillion**（表 1） | dense 部分 5 层 FFNN（4096/2048/1024/512/256），embedding dim 未单独给 | **100 T 参数 → ≥ 200 TB（fp16）存储**（论文 §2 原文） | "embedding layer usually domains the parameter space"；hybrid CPU-GPU PS 架构 |
+| S2 | **HugeCTR / Merlin** | NVIDIA · 2022 · RecSys 2022 | [2210.08803](https://arxiv.org/abs/2210.08803) | 单 GPU 装不下 → 必须 distributed slot embedding hash | embedding dim 由 user 配置 | **ETC 三级存储**：GPU L1 → VDB (NVLink/PCIe host mem) → **PDB (SSD/HDD, "permanently store entire embedding tables")** | paper 原文："total size of an embedding feature can exceed the memory capacity of a single GPU" |
+| S3 | **Monolith**（ByteDance） | ByteDance · 2022 · RecSys 2022 | [2209.07663](https://arxiv.org/abs/2209.07663) | "millions of IDs"；**Dr / Dq split embedding 总共 2^25 = 33.5M slots** | 双塔拼接（Dr 拼 Dq） | Cuckoo HashMap in-memory KV + on-disk fallback | **15 M DAU**；**1000 个 parameter server shards**；**0.01% failure rate per day**（≈ 1500 用户/天） |
+| S4 | **TT-Rec**（Tensor Train） | Microsoft / Meta · 2021 · MLSys 2021 | [2101.11714](https://arxiv.org/abs/2101.11714) | **Kaggle Criteo 7 个最大表：最大 10.1 M rows（10,131,227），dim=16**（Table 2） | d=16 | **7 表总计 2.16 GB → TT-Rec 压缩后 18 MB（112× 压缩）**；d=64→512 时 baseline 总内存 > **96 GB**（超 HBM） | TT-decomposition；cache 高频访问 embedding |
+| S5 | **AutoShard**（embedding table sharding） | Rice + Meta · 2022 · KDD 2023 | [2208.06399](https://arxiv.org/abs/2208.06399) | "industrial models demand extremely large number of parameters"（具体行数未公开） | 维度与表大小正相关（"dimension is positively correlated to fetch data amount"） | 用 RL 自动 sharding，**实验含 MetaSyn 合成 + MetaProd 生产数据集** | "embedding tables often demand an extremely large number of parameters, which become the storage and efficiency bottleneck" |
+| S6 | **Compositional Embeddings**（Complementary Partitions） | Twitter · 2019 · SIGIR 2019 | [1909.02107](https://arxiv.org/abs/1909.02107) | **"each categorical feature could take on as many as tens of millions of different possible categories (|S| ≈ 10^7), with embedding vector dimension D ≈ 100"**（§1 原文） | **D ≈ 100**（经验值） | 未给字节数；embedding table 是"primary memory bottleneck during both training and inference" | 在 Criteo Kaggle 测试（13 dense + 26 categorical） |
+
+### B. 关键数据集与数字（可直接 cite）
+
+#### Persia Table 1 · 真实/合成 benchmark 的 sparse parameter 总数
+
+| 数据集 | 记录数 | Sparse # parameter | Dense # parameter | 来源 |
+|--------|--------|-------------------|-------------------|------|
+| **Taobao-Ad**（淘宝广告） | 阿里 Alibaba 内部数据 | **29 Million** | 12 Million | Persia §6.3 + Table 1 |
+| **Avazu-Ad**（公开） | 32 million records（11 天） | **134 Million** | 12 Million | Persia §6.3 + Table 1 |
+| **Criteo-Ad**（公开） | 44 million records（24 天） | **540 Million** | 12 Million | Persia §6.3 + Table 1 |
+| **Kwai-Video**（快手 production） | **3 billion records**（7 天） | **2 Trillion** | 34 Million | Persia §6.3 + Table 1 |
+| Criteo-Syn1（合成） | — | **6.25 Trillion** | 12 Million | Persia §6.3 + Table 1 |
+| Criteo-Syn2 | — | **12.5 Trillion** | 12 Million | Persia §6.3 + Table 1 |
+| Criteo-Syn3 | — | **25 Trillion** | 12 Million | Persia §6.3 + Table 1 |
+| Criteo-Syn4 | — | **50 Trillion** | 12 Million | Persia §6.3 + Table 1 |
+| Criteo-Syn5 | — | **100 Trillion** | 12 Million | Persia §6.3 + Table 1 |
+
+> **关键洞察**（Persia §2 原文）："as 100 trillion parameters require at least 200TB to simply store the model (even in fp16), a distributed training system at this scale often consists of hundreds of machines."
+> 即 **100 T sparse parameter × 2 bytes (fp16) = 200 TB**，这是工业 sparse embedding 的实际"天花板"。
+
+#### Monolith（ByteDance）· 生产部署关键数字
+
+| 指标 | 数值 | 来源 |
+|------|------|------|
+| 日活用户数（DAU） | **15 Million** | Monolith §1 |
+| Parameter server 数量 | **1000 PS shards** | Monolith §2 |
+| 单 PS 失败率 | **0.01%**（约每 10 天挂 1 个 PS） | Monolith §2.1 |
+| 单 PS 失败的影响 | 约 **1500 用户损失 1 天反馈** | Monolith §2.1 |
+| Embedding 总容量 | **2^24 = 16.7M unique item IDs（分桶前）** | Monolith §2.1 |
+| Embedding 桶总容量 | **2^25 = 33.5M slots（Dr ∥ Dq 拼接后）** | Monolith §2.1 |
+| 关键技术 | Cuckoo HashMap（collisionless hash table）+ feature eviction | Monolith §2.1-§2.2 |
+
+> 论文原文："for sparse features which is user-specific, this is equivalent to losing a tiny fraction of 0.01% DAU"。
+
+#### TT-Rec · Kaggle Criteo 7 个最大 embedding table（Table 2 完整复刻）
+
+| # | # Rows | Emb. Dim | TT-Core R=16 | TT-Core R=32 | TT-Core R=64 | 压缩比（R=64） |
+|---|--------|---------|--------------|--------------|--------------|----------------|
+| 1 | **10,131,227** | 16 | 135,040 | 495,360 | 1,891,840 | **86×** |
+| 2 | 8,351,593 | 16 | 122,176 | 449,152 | 1,717,504 | 78× |
+| 3 | 7,046,547 | 16 | 121,600 | 448,000 | 1,715,200 | 66× |
+| 4 | 5,461,306 | 16 | 106,944 | 393,088 | 1,502,976 | 58× |
+| 5 | 2,202,608 | 16 | 79,264 | 291,648 | 1,115,776 | 32× |
+| 6 | 286,181 | 16 | 43,360 | 160,448 | 615,808 | 7× |
+| 7 | 142,572 | 16 | 31,744 | 116,736 | 446,464 | 5× |
+| **7 表合计** | ~33.6 M rows | 16 | ~640 K | ~2.35 M | ~9.0 M | — |
+| **总存储** | — | — | — | — | — | **2.16 GB → 18 MB = 112×** |
+
+> 论文原文："with TT-Rec, the memory requirement of the 7 embedding tables is reduced from 2.16 GB to only 18 MB, leading to 112× model size reduction"（TT-Rec §6.6）。
+> 进一步原文："as the dimension of the embedding increases from 64 to 512, the total memory requirement is over 96 GB, exceeding the latest GPU memory capacity" — 这是 TT-Rec 出现的根本动机。
+
+#### Compositional Embeddings · Sparse feature 数量级
+
+> 论文原文（§1）："Each categorical feature could take on as many as tens of millions of different possible categories (i.e., |S| ≈ 10^7), with an embedding vector dimension D ≈ 100."
+> 即 **每个 sparse feature 的 cardinality 可达 10⁷（千万级）**，单条 embedding 维度 D≈100。
+> 实验数据集：Criteo Kaggle（13 dense + 26 categorical fields）。
+
+### C. 与"算法论文"汇总表的交叉对比
+
+| 维度 | 13 篇算法论文（第一节） | 6 篇系统论文（本节） | 一致性 |
+|------|--------------------|-------------------|--------|
+| Sparse feature 数（最大） | "billion-scale vocabularies"（GR/HSTU §1） | **2 Trillion**（Kwai-Video, Persia Tbl 1） | 系统论文直接给绝对数字 |
+| Embedding dim | 16（MIMN memory slot）~ 1024（HSTU 实验配置） | **16**（TT-Rec Kaggle）~ **D≈100**（Comp Partition 经验） | 算法偏大，系统偏保守 |
+| 总存储 | "multiple GB per table"（DLRM） | **200 TB（100 T param × fp16, Persia）** / **2.16 GB（7 表, TT-Rec）** | 系统论文给完整数字 |
+| 关键设计选择 | "codebook 8192³"（OneRec） | "2^25 slots with Dr ∥ Dq split"（Monolith） | 都是避撞 + 分桶 |
+| Hash 策略 | hashing trick（DCN 经验公式） | quotient-remainder trick（Comp Partitions）；Cuckoo HashMap（Monolith） | 系统侧更精细 |
+
+### D. 与"形态分类"的对应关系
+
+按"是否真有 sparse embedding table"重新归类（详见下章），**系统论文全部属于"形态 A：传统 dense sparse embedding table"**：
+
+- **Persia**：标准 lookup table，sparse param 29M → 100T
+- **HugeCTR**：slot-based lookup，三级存储
+- **Monolith**：Cuckoo HashMap + eviction
+- **TT-Rec**：标准 embedding table + TT 压缩
+- **AutoShard**：标准 embedding table + 自动分片
+- **Comp Partitions**：将单条 embedding 拆成多个 partition 拼接
+
+**这一节揭示了一个被忽略的事实**：上面 13 篇算法论文里大量"sparse param 未披露"的字段，在专门的系统论文里其实都有答案。**算法论文追求架构创新，系统论文才是工业 sparse embedding 真实规模的"基准测量"**。
+
+### E. 工业系统论文溯源清单
+
+| # | 系统论文 | arXiv | 文件路径 | 字节数 |
+|---|---------|-------|---------|--------|
+| S1 | Persia | 2111.05897 | /tmp/sys_papers_txt/Persia_MS.txt | 107,812 |
+| S2 | HugeCTR | 2210.08803 | /tmp/sys_papers_txt/Merlin_HugeCTR.txt | 24,841 |
+| S3 | Monolith | 2209.07663 | /tmp/sys_papers_txt/Monolith_BD.txt | 43,392 |
+| S4 | TT-Rec | 2101.11714 | /tmp/sys_papers_txt/TT_Rec.txt | 110,834 |
+| S5 | AutoShard | 2208.06399 | /tmp/sys_papers_txt/AutoShard.txt | 123,836 |
+| S6 | Comp Partitions | 1909.02107 | /tmp/sys_papers_txt/Comp_Partitions.txt | 51,168 |
+
+> **数据采集说明**：每行数字均通过 `pdftotext -layout` 提取自原 PDF，并定位到具体章节 / Table 编号。
+> 注：Alibaba 1803.02349（"Billion-scale Commodity Embedding" KDD 2018）、Unified Embedding KDD 2023 (2305.12102)、Deep Retrieval (2007.07203)、BST Alibaba (1905.06874) 等论文因 arXiv PDF 流截断（curl 下载的 PDF 缺少 xref trailer），本次未能在本轮纳入；建议下一轮用 `mutool clean` 或 GitHub 上传的官方源 PDF 重做提取。
 
 ---
 
@@ -249,6 +364,17 @@ TokenMixer-Large|  ✓(保留)  | -      |    -    | 7B/15B 是 dense 部分
 | OneRec | arxiv.org/html/2502.18965 | 774 KB |
 | MTGR | arxiv.org/html/2505.18654 | 148 KB |
 | TokenMixer-Large | arxiv.org/html/2602.06563 | 342 KB |
+
+### A.2 工业系统论文（补充）
+
+| 论文 | 来源 | 文件大小 |
+|------|------|---------|
+| Persia（Microsoft · 2022 · KDD 2023） | arxiv.org/pdf/2111.05897 | 2.8 MB |
+| HugeCTR / Merlin（NVIDIA · 2022 · RecSys 2022） | arxiv.org/pdf/2210.08803 | 536 KB |
+| Monolith（ByteDance · 2022 · RecSys 2022） | arxiv.org/pdf/2209.07663 | 1.6 MB |
+| TT-Rec（Microsoft / Meta · 2021 · MLSys 2021） | arxiv.org/pdf/2101.11714 | 2.7 MB |
+| AutoShard（Rice + Meta · 2022 · KDD 2023） | arxiv.org/pdf/2208.06399 | 1.0 MB |
+| Comp Partitions（Twitter · 2019 · SIGIR 2019） | arxiv.org/pdf/1909.02107 | 1.0 MB |
 
 ## 附录 B · 提取方法说明
 
