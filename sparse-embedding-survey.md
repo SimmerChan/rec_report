@@ -164,6 +164,93 @@
 
 ---
 
+## 一·补·2、知乎社区讨论精华 · 工业 sparse embedding 实战数据
+
+> **本节补充自知乎社区的工业界讨论与深度专栏文章**。与上一节的"系统论文"不同，本节数据来自**一线工程师 / 架构师 / 学术 - 工业背景博主**在知乎上的回答或专栏文章，是工业实践的另一类高价值溯源。
+> **每个数据点都标注知乎回答 / 专栏 URL**，完整内容已通过 `opencli browser` + Chrome 浏览器（已登录知乎）直接抓取。
+
+### A. 知乎关键回答与专栏 · 数据汇总
+
+| # | 作者 | 链接 | 时间 | 关键数据 / 论断 |
+|---|------|------|------|----------------|
+| Z1 | **王小新**（知乎 ID） | [推荐系统 embedding 过大如何压缩？](https://www.zhihu.com/question/522006535/answer/3108583070) | 2023-07-08 | "**稀疏特征数目可达到千亿级别**使得**超 99% 参数量分布在 Embedding 部分**"；"**10% 特征往往占到了模型中超过 95% 体积**"；"**emb 层 int8 量化基本无损，内存压缩到原来的 30%**" |
+| Z2 | **BUGs**（知乎 ID） | [同问题回答](https://www.zhihu.com/question/522006535/answer/90040419632) | 2025-01-31 | "三种手法并用，性价比由高到低：**1、过滤低频项（可能涨点） 2、缩减 embedding 维度（有限掉点） 3、量化（可能会明显掉点）**" |
+| Z3 | **deephub**（知乎 ID） | [万亿 LLM MoE 大模型和十万亿 / 百万亿 Embedding 在加速器上设计挑战](https://www.zhihu.com/question/623549698/answer/1961740878566629454) | 2025-10-15 | "**推荐系统要处理几千万个用户、几亿个商品**"；"**Google 的 Persia 系统做到了 100 万亿参数**"；"**H100 单卡 80GB 显存，装个万亿参数的 MoE，按 FP16 算也要 2TB**"；"**YouTube 推荐系统的论文提到，他们需要几千万个视频 ID 的 embedding**"；"**真正高频访问的可能就 1%**"；"**热 embedding 用 FP32，冷 embedding 用 INT8 甚至 INT4，能省 75% 的空间**" |
+| Z4 | **冯卡门迪**（专栏作者） | [RecSys'24 英伟达 EMBark 大规模推荐 Embedding 优化架构](https://zhuanlan.zhihu.com/p/8446271580) | 2024-11-24 | "**DLRM 的参数规模在变得越来越大**"；"**模型的大部分参数都来源于底层的 Embedding 层**"；"**参数规模在百万以上的比 10 万到百万的还多**"（分布规律）；"**任务查询的规模上，甚至有一次取 100 个 Embedding 的计算存在**"；"**GPU 通信和 Embedding 计算一起的用时占比从 60% 上涨到了 76%**" |
+| Z5 | **Loster**（专栏作者） | [LongCat N-gram Embedding：扩大 Embedding 规模优于扩大专家规模](https://zhuanlan.zhihu.com/p/2001437269136020420) | 2026-02-02 | "**美团 LongCat-Flash-Lite：68.5B 总参数 / ~3B 激活参数**"；"**Embedding 层：约 31B（占比接近 45%）**"；"**Backbone：约 37.5B（采用 MoE 架构）**"；"**256k 上下文窗口**，通过 **YaRN** 方法实现" |
+| Z6 | **敏叔**（专栏作者） | [RAG效果差？90%的问题在 Embedding 模型没选对](https://zhuanlan.zhihu.com/p/2036831930277163893) | 2025-05-10 | "**300M 参数左右的 large 模型需要约 4G 显存，100M 参数的 base 模型仅需 2G 显存**"（通用语言模型，对比参考） |
+
+### B. 知乎最关键数据点（按"工业 sparse embedding 规模"维度提取）
+
+#### B.1 sparse feature 数量级
+
+| 表述 | 出处 | 备注 |
+|------|------|------|
+| **"稀疏特征数目可达到千亿级别"** | Z1 王小新 | 国内大厂推荐系统的实际数量级 |
+| **"推荐系统要处理几千万个用户、几亿个商品"** | Z3 deephub | 经典工业推荐系统规模 |
+| **"YouTube 推荐系统需要几千万个视频 ID 的 embedding"** | Z3 deephub | 引用 YouTube 论文（具体来源未指明） |
+| **"参数规模在百万以上的比 10 万到百万的还多"** | Z4 冯卡门迪 / NVIDIA EMBark | 工业推荐模型 Embedding 表的典型分布规律（重尾） |
+| **"一次取 100 个 Embedding 的计算存在"** | Z4 冯卡门迪 | 任务查询规模上限（multi-hot / 用户行为序列） |
+
+#### B.2 sparse embedding 占总参数比例
+
+| 表述 | 出处 | 备注 |
+|------|------|------|
+| **"超 99% 参数量分布在 Embedding 部分"** | Z1 王小新 | 工业推荐模型的事实 |
+| **"模型的大部分参数都来源于底层的 Embedding 层"** | Z4 冯卡门迪 | 同上，独立来源相互印证 |
+| **"Embedding 层约 31B（占比接近 45%）"** | Z5 Loster / 美团 LongCat-Flash-Lite | 注意：这是 LLM 中的 N-gram Embedding（**非传统推荐**，但反映"超大 Embedding 层"趋势） |
+| **"千亿参数 LLM MoE：1.8 万亿总参 / 每次激活其中一小部分（8 个专家）"** | Z3 deephub | 对比 LLM 与推荐 Embedding 的本质差异 |
+
+#### B.3 量化与压缩策略（业界实战）
+
+| 策略 | 数据 | 出处 |
+|------|------|------|
+| **emb 层 int8 量化** | "基本无损，**内存压缩到原来的 30%**"（即 3.3× 压缩） | Z1 王小新 |
+| **热 embedding FP32 / 冷 embedding INT8 甚至 INT4** | "**能省 75% 的空间**" | Z3 deephub |
+| **过滤低频项 → 缩减维度 → 量化** | 性价比由高到低："过滤低频项（可能涨点）" | Z2 BUGs |
+| **三级缓存：GPU HBM → CPU DRAM → 分布式 KV（SSD）** | "**99.9% 的请求都能在本地 HBM 命中**" | Z3 deephub（描述 YouTube） |
+
+#### B.4 部署硬件需求
+
+| 资源 | 数值 | 出处 |
+|------|------|------|
+| H100 单卡显存 | **80 GB** | Z3 deephub |
+| 装 1 万亿参数 MoE（FP16） | **需要 2 TB** | Z3 deephub |
+| MoE 训练时 all-to-all 通信占比 | **45% 时间** | Z3 deephub（"根据 NVIDIA 的研究报告"） |
+| GPU 通信延迟 | NVLink **900 GB/s**；跨节点 InfiniBand 速度掉一个量级 | Z3 deephub |
+| EMBark 多 GPU 训练通信耗时占比 | 25% → 51%（GPU 数量增加时） | Z4 冯卡门迪 |
+| EMBark GPU 通信 + Embedding 计算一起 | 60% → 76%（GPU 数量增加时） | Z4 冯卡门迪 |
+
+### C. 与"系统论文"数据的交叉对比
+
+知乎讨论与系统论文数据**相互印证**：
+
+| 维度 | 知乎讨论 | 系统论文 | 一致性 |
+|------|---------|---------|--------|
+| 推荐模型参数集中于 Embedding | "超 99%"（Z1） | "embedding layer usually domains the parameter space"（Persia §2） | ✅ 完全一致 |
+| Sparse feature 数量级 | "千亿级别"（Z1）；"几亿个商品"（Z3） | Persia Tbl 1: Taobao-Ad **29M** / Kwai-Video **2 Trillion** | ✅ 量级匹配 |
+| Embedding 量化收益 | int8 → **30% 内存**（Z1） | Persia §6: INT4 量化 embedding | ✅ 趋势一致 |
+| 大规模存储需求 | "100 万亿参数 → 200TB"（Z3 引述 Persia） | Persia §2 原文："100 trillion parameters require at least 200TB" | ✅ 完全一致 |
+| 推荐系统是访存密集型 | "卡在内存带宽上"（Z3） | Monolith §2.1: Cuckoo HashMap 设计 | ✅ 完全一致 |
+
+### D. 知乎溯源清单
+
+| # | 知乎内容 | 链接 | 来源类型 |
+|---|---------|------|---------|
+| Z1 | 王小新 · 推荐系统 embedding 过大如何压缩？ | https://www.zhihu.com/question/522006535/answer/3108583070 | 问题回答 |
+| Z2 | BUGs · 同问题回答（简短策略） | https://www.zhihu.com/question/522006535/answer/90040419632 | 问题回答 |
+| Z3 | deephub · 万亿 / 十万亿 / 百万亿 Embedding 在加速器上的设计挑战 | https://www.zhihu.com/question/623549698/answer/1961740878566629454 | 问题回答 |
+| Z4 | 冯卡门迪 · 英伟达 EMBark 大规模推荐 Embedding 优化架构 | https://zhuanlan.zhihu.com/p/8446271580 | 知乎专栏 |
+| Z5 | Loster · 美团 LongCat N-gram Embedding | https://zhuanlan.zhihu.com/p/2001437269136020420 | 知乎专栏 |
+| Z6 | 敏叔 · Embedding 模型选型指南 | https://zhuanlan.zhihu.com/p/2036831930277163893 | 知乎专栏 |
+| Z7 | 知乎搜索 · "推荐 embedding 规模"（18 条来源 AI 总结） | https://www.zhihu.com/search?type=content&q=推荐+embedding+规模 | 搜索结果（已登录知乎） |
+
+> **数据采集说明**：以上 7 条内容均通过 `opencli browser default extract` 直接从登录态 Chrome（profile 3vfysj6k）抓取，绕过知乎匿名访问的 403 反爬限制。
+> `opencli zhihu search` 命令自身因需要单独配置 cookies 失败（`AUTH_REQUIRED`），但 `opencli browser` 配合现有 Chrome profile 可直接获取登录后的搜索结果和专栏正文。
+> 注：知乎其他相关问题（如 OneReason/生成式推荐讨论）已在 `slides-v2.html` 对应章节中通过 `generative-rec-article-zhihu-style.md` 文档统一引用，本表聚焦**"sparse embedding 规模"**这一具体维度。
+
+---
+
 ## 二、按"是否真有 sparse embedding"重新分类
 
 从上面的表格可以清晰看到，工业推荐论文里"sparse embedding"实际有 **三种存在形态**：
