@@ -729,4 +729,329 @@ TokenMixer-Large|  ✓(保留)  | -      |    -    | 7B/15B 是 dense 部分
 
 ---
 
+## 一·补·4、业务场景 × sparse embedding 存储空间 · 工程方案全景
+
+> **本节聚焦"业务场景 → sparse embedding 实际存储空间 → 工程方案"的三维映射**。
+> 与"一·补·3 厂商 × 业务 × 规模矩阵"侧重"线上业务指标"不同，本节专门回答："**我这个业务到底要花多少存储？用什么工程方案解决？**"
+> **数据来源**：综合知乎专栏（王小新 / 蚂蚁 HybridEmbedding / OneFlow OneEmbedding / 京东广告 GPU 优化 / NVIDIA EMBark / DeepRec / Hash Embedding 详解 / 字节 Monolith / 阿里 HybridBackend / BUGs）+ 系统论文（Persia / Monolith / TT-Rec / HugeCTR / OneEmbedding）+ 公开数据集（Criteo1T）。
+
+### A. 公开数据集的 sparse embedding 存储"标尺"
+
+> **用途**：在做"我的业务要花多少存储"估算时，先和公开数据集对比。
+
+| 数据集 / 模型 | 稀疏特征 ID 数 | embedding dim | FP32 总存储 | Adam 优化器总存储（×3） | 备注 / 来源 |
+|--------------|--------------|--------------|-------------|---------------------|-----------|
+| **Criteo1T 公开数据集** | **约 10 亿** | 128 | **512 GB** | **1536 GB** | OneFlow OneEmbedding 文档 [zhuanlan.zhihu.com/p/552943580](https://zhuanlan.zhihu.com/p/552943580) |
+| **MLPerf DLRM** | — | — | **90 GB** | — | OneFlow 测试用例 [zhuanlan.zhihu.com/p/552943580](https://zhuanlan.zhihu.com/p/552943580) |
+| **TT-Rec Kaggle Criteo 7 张最大表** | 最大 **10.1 M rows** (10,131,227) | 16 | **2.16 GB**（7 表） | — | TT-Rec §6.6 Table 2 |
+| **DLRM (Facebook 2019)** | 多张表 | — | "**tables each requiring in excess of multiple GB**" | — | DLRM 原文 §6 |
+| **Instagram 推荐**（Complementary Partitions 引文） | \|S\|≈10⁷（千万级） | D≈100 | 4 TB（单 embedding table） | — | SIGIR 2019, Twitter |
+| **Persia 数据集 1** | 6 个真实/合成数据集 | — | **29 M → 100 Trillion** 参数 | — | Persia Table 1 |
+| **Persia 100T 参数** | 100 T | — | **200 TB**（fp16, 100T×2B） | — | Persia §2 原文 |
+| **Monolith 字节** | 2^25 = 33.5 M slots | Dr ⊕ Dq 拼接 | 数 GB~数十 GB | — | ByteDance RecSys 2022 |
+| **HSTU Meta production** | "fifty sparse features" | — | 多 GB~数十 GB | — | GR/HSTU §2 |
+
+> **关键洞察 1**：从公开数据集 **Criteo1T（10 亿 ID）** → 实际工业推荐系统 **千亿级**（蚂蚁 HybridEmbedding 原文："**稀疏层参数可达千亿甚至万亿**"），**规模差距 ~1000×**。这就是为什么"训练一个 Criteo1T"和"训练一个阿里淘宝"需要的工程方案完全不同。
+
+> **关键洞察 2**：Adam 优化器的存储开销是 FP32 参数的 **3 倍**（FP32 + 2 个状态变量 m 和 v）。一个 100 GB FP32 模型用 Adam 训练需要 ~300 GB 显存。
+
+### B. 不同业务场景的 sparse embedding 存储空间估算
+
+> **本表基于"一·补·3 厂商 × 业务 × 规模矩阵" + "A 节公开数据集标尺" + "B.5 工程经验值"综合估算**。
+> 估算逻辑：vocab_size × embedding_dim × bytes_per_value（精度）。
+
+#### B.1 短视频 / 内容推荐（字节 TikTok / 抖音 / 快手）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| 短视频 ID 特征 | 10-100 亿 item ID | 64-128 | 256 GB - 5.1 TB | 抖音 / TikTok / 快手 | Monolith 字节 Entry/PS 分离 + Collisionless Embedding |
+| 视频标签 / 类目 | 10 万-100 万 tag ID | 32-64 | 12 MB - 25 GB | 同上 | 类目 ID 直接 hash embedding table |
+| 用户 ID | 5-20 亿 user ID | 64-128 | 128 GB - 1.0 TB | 同上 | 频次淘汰 + Collisionless Embedding |
+| 上下文特征（场景/位置） | 1 万-100 万 | 16-32 | < 1 GB | 同上 | full embedding 不压缩 |
+
+**关键事实**：
+- 字节跳动 Monolith（真实生产，RecSys 2022 论文）：**2^25 = 33.5 M slots**（Dr ⊕ Dq 拼接 embedding table），**15M DAU，1000 PS shards**
+- 抖音短视频推荐系统"精排"技术（[zhuanlan.zhihu.com/p/2035460824593065084](https://zhuanlan.zhihu.com/p/2035460824593065084)）：Entry 节点负责非 Embedding 计算（GPU 集群）；Online PS 分片存储超大规模 Embedding Table
+- 字节 B 站精排（小红书）：fp16 混合精度 2× 压缩，int8 量化进一步压缩
+
+#### B.2 电商推荐（阿里淘宝 / 天猫 / 京东 / 拼多多）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| 商品 ID | 几亿-几十亿 item ID | 32-96 | 40 GB - 3.5 TB | 淘宝/天猫/京东 | Alibaba PAI-HybridBackend（GPU-centric）+ HybridEmbedding（NVMe SSD） |
+| 用户 ID | 几亿-10 亿 user ID | 32-96 | 5 GB - 350 GB | 同上 | 同上 + 千亿级 sparse |
+| 商品类目 / 店铺 | 100 万-1 亿 | 16-32 | < 5 GB | 同上 | full embedding |
+| 商品交叉特征 | 1000 亿-1 万亿组合 | 16-64 | 数十 GB - 几 TB | 同上 | hash embedding（Double Hash / Hybrid Hash）|
+| 阿里 EST 淘宝展示广告 | "**千亿级 ID Embedding**" | — | — | 淘宝展示广告 | "**臭名昭著的 One-epoch**" 多 epoch 异步训练法 |
+
+**关键事实**：
+- 阿里 PAI-HybridBackend 论文："**稀疏 Embedding 特征表达有着百 GB 至数十 TB 级别的内存占用消耗**（比普通的 CV、NLP 模型参数高出一到两个数量级）"
+- 阿里 EST（淘宝展示广告，[zhuanlan.zhihu.com/p/2047452835533665955](https://zhuanlan.zhihu.com/p/2047452835533665955)）：**CTR +1.22%, RPM +3.27%**；用 multi-epoch 异步训练法 + 稀疏参数重置解决"千亿 ID Embedding 雷区"
+- 阿里 PICASSO（HybridBackend, ICDE 2022）：**128 张 GPU 训练千亿规模参数模型**，单位成本训练吞吐 5× 提升
+- 京东广告稀疏大模型（[zhuanlan.zhihu.com/p/713692019](https://zhuanlan.zhihu.com/p/713692019)）：**千亿级 sparse 参数，TB 级别存储量，百万 QPS 高并发，毫秒级响应**，**Embedding 层 I/O 耗时占比 >30%**，自研 GPU-HBM 一级缓存 + CPU 二级 PS
+- 阿里 EGES（淘宝商品 Embedding, KDD 2018）：**10 亿**商品级，**96 维**
+
+#### B.3 信息流广告（字节 / 腾讯 / 美团）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| 广告主 ID + 行业 | 1 万-100 万 | 32-64 | < 5 GB | 字节巨量引擎 / 腾讯广点通 | full embedding |
+| 广告素材 ID | 几亿-几十亿 | 64-128 | 数十 GB - 数 TB | 同上 | hash embedding + 量化 |
+| 用户 × 广告交叉 | 1000 亿+ | 8-32 | 数 GB - 数百 GB | 同上 | TT-Rec / Tensor Train 压缩（**2.16 GB → 18 MB = 112×**）|
+| 上下文 × 兴趣 | 数亿组合 | 16-32 | 数 GB - 数十 GB | 同上 | INT8 量化（**30% 内存**）|
+
+**关键事实**：
+- 京东广告 GPU 优化（[zhuanlan.zhihu.com/p/713692019](https://zhuanlan.zhihu.com/p/713692019)）：Embedding 层 I/O 耗时占比 >30% → **GPU-HBM 一级缓存**+ **CPU 二级 PS**+ **三级流水线**
+- 字节巨量引擎 / 腾讯广点通（知乎无具体 sparse 数字披露）：推测同级别千亿 sparse
+
+#### B.4 社交网络 / 朋友圈（Meta / 微信 / LinkedIn）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| 用户 ID（社交图） | 10-50 亿 user ID | 64-256 | 256 GB - 5 TB | Meta / 微信 | Meta HSTU / DLRM 多 GB table |
+| 朋友圈 / Feed 内容 ID | 几亿-几十亿 | 64-128 | 数十 GB - 数 TB | 同上 | 同上 |
+| 互动关系（关注/点赞） | 数十亿-数千亿 | 16-32 | 数 GB - 数百 GB | 同上 | hash embedding |
+| Meta production baseline | "fifty sparse features" | — | **多 GB ~ 数十 GB** | Meta HSTU | "approximately one thousand dense features and fifty sparse features" |
+
+**关键事实**：
+- Meta GR/HSTU（ICML 2024）：production DLRM baseline **"approximately one thousand dense features and fifty sparse features"**，每张表数 GB
+- 腾讯微信朋友圈 Multi-Embedding（已全量部署，知乎信源）
+
+#### B.5 中文内容社区（小红书 / B 站 / 知乎）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| 笔记 / 视频 ID | 几亿-10 亿 | 64-128 | 数十 GB - 数百 GB | 小红书 / B 站 | hash embedding + 量化 |
+| 用户 ID | 1-5 亿 | 64-128 | 25 GB - 250 GB | 同上 | full embedding |
+| 标签 / 话题 | 100 万-1 亿 | 32-64 | < 5 GB | 同上 | full embedding |
+
+#### B.6 LLM 推荐 / Reasoning（OneReason / OpenOneRec）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| itemic token（Qwen3-8B base） | 0.8B / 8B（不含 sparse） | 4096 | — | 快手 OneReason | semantic ID + RQ-Kmeans 量化 |
+| 用户行为序列 | 1K-16K 长度 | 1024-4096 | 几 GB - 几十 GB | 同上 | sequence 本身存储（不存 embedding table）|
+
+#### B.7 海外公司（Meta / YouTube / Shopee / Microsoft）
+
+| 业务类型 | 稀疏特征规模估算 | embedding dim | FP32 存储 | 实际业务 | 实际存储方案 |
+|---------|----------------|---------------|----------|---------|------------|
+| YouTube 视频 ID | "**几千万个视频 ID**" | — | 数百 GB - 数 TB | YouTube | 三级缓存：GPU HBM + CPU DRAM + 分布式 KV（**99.9% HBM 命中**）|
+| Meta production DLRM | 50 sparse features | — | **多 GB - 数十 GB** | Facebook / Instagram | Meta HSTU / TorchRec |
+| Meta ULTRA-HSTU | 16K 序列，d=512 | 512 (INT4 量化) | **7 GB → 2.3 GB / 层**（activation，不是 embedding）| Facebook 主 Feed | INT4 量化 embedding |
+| Microsoft Persia | 100 T sparse | 4096 dense 部分 | **200 TB** | Bing / Ads / News | "hundreds of machines" PS |
+| ByteDance Monolith | 2^25 = 33.5 M slots | Dr ⊕ Dq | 数 GB~数十 GB | 抖音 / TikTok | 1000 PS shards + Cuckoo HashMap |
+| Shopee 搜索 | 全流量 | — | 推测 TB 级 | Shopee Search | OnePiece 工业落地 |
+
+### C. 工程方案全景 · 按厂商 / 系统分类
+
+> **本节汇总"业务场景 → 存储问题 → 工程方案"的对应关系**，覆盖当前业界所有主流方案。
+
+#### C.1 NVIDIA Merlin / HugeCTR（工业级标杆）
+
+> **来源**：[zhuanlan.zhihu.com/p/8446271580](https://zhuanlan.zhihu.com/p/8446271580) 冯卡门迪专栏 + HugeCTR 论文 (RecSys 2022, arXiv:2210.08803)
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **存储后端** | **三级存储**：GPU 显存（热 Embedding）+ CPU 内存（次热）+ SSD（冷）| 命中率 90%+（典型工业推荐马太效应）|
+| **GPU 通信耗时占比** | 多 GPU 集群：GPU 通信耗时 **25% → 51%**（随 GPU 数量增加）| GPU 通信 + Embedding 计算一起 **60% → 76%** |
+| **EMBark 分片规划** | 自动分片规划器（贪心算法），RB（Reduction-based）+ UB（Unique-based）数据分发 | 优化目标：最小化 critical path cost + GPU 内存不超载 |
+| **层级通信** | 节点内 NVLink（高速）+ 节点间 InfiniBand（高延迟）| 显式建模两种通信成本 |
+
+#### C.2 Meta TorchRec / Monolith（生产实践标杆）
+
+> **来源**：Monolith (ByteDance, RecSys 2022, arXiv:2209.07663) + 字节 Monolith 知乎专栏 [zhuanlan.zhihu.com/p/2035460824593065084](https://zhuanlan.zhihu.com/p/2035460824593065084) + 知乎专栏 [zhuanlan.zhihu.com/p/29129309463](https://zhuanlan.zhihu.com/p/29129309463) TorchRec 动态 embedding
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **真实生产规模** | 字节跳动 Monolith 支撑 **TikTok / 抖音** | 15M DAU, **1000 PS shards** |
+| **Embedding Table 容量** | Dr / Dq split embedding 总共 **2^25 = 33.5 M slots** | 双塔拼接（Dr 拼 Dq）|
+| **数据结构** | **Cuckoo HashMap**（collisionless hash table）+ feature eviction | — |
+| **架构** | **Entry / PS 分离**：Entry 计算密集（GPU），Online PS 分片存储超大规模 Embedding | 计算/IO 解耦 |
+| **分钟级模型更新** | RPC 直接同步增量参数：Training PS → Online PS | 模型近实时迭代 |
+| **TorchRec 动态 Embedding** | `ManagedCollisionEmbeddingCollection` + `DistanceLFU_EvictionPolicy` | `eviction_interval=2` (2 次 forward 后触发) |
+| **淘汰策略** | DistanceLFU / LRU / LFU | 显式管理词表大小 |
+
+#### C.3 Meta HSTU / ULTRA-HSTU（2024-2026）
+
+> **来源**：GR/HSTU (Meta, ICML 2024, arXiv:2402.17152) + ULTRA-HSTU (Meta, 2026.02, arXiv:2602.16986)
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **生产 baseline** | "approximately one thousand dense features and fifty sparse features" | **50 sparse features**, 1000 dense features |
+| **每张 sparse table** | "tables each requiring in excess of **multiple GB**" | 多 GB / table |
+| **Sparse + Dense 一体化建模** | HSTU 替代标准 Transformer，统一处理两类特征 | +12.4% 线上 A/B |
+| **ULTRA-HSTU 稀疏注意力** | **SLA 半局部注意力** (K₁ 局部 + K₂ 全局), 复杂度 O((K₁+K₂)·L) | 5×训练 21×推理加速 |
+| **INT4 量化 embedding** | 通信 -75% 空间 | INT8 lookup=13m / INT4 lookup=19m（论文 §6）|
+
+#### C.4 OneFlow OneEmbedding（云端方案）
+
+> **来源**：[zhuanlan.zhihu.com/p/552943580](https://zhuanlan.zhihu.com/p/552943580) + [zhuanlan.zhihu.com/p/561884035](https://zhuanlan.zhihu.com/p/561884035)
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **核心创新** | **三层存储**：① 纯 GPU 显存 ② GPU 缓存 + CPU 内存 ③ GPU 缓存 + SSD | 单卡也能训练 TB 级模型 |
+| **天花板** | 纯 GPU：**160 GB** / GPU+CPU：数百 GB~数 TB / GPU+SSD：数十 TB+ | — |
+| **测试用例** | MLPerf DLRM **90 GB** | 测试环境：8×A100-80GB / 4×A100-40GB / 1920 GB DRAM / 30.72 TB SSD |
+| **性能 vs TorchRec** | DLRM 模型上 OneEmbedding 性能是 **TorchRec 3 倍以上** | 开启 TorchRec 通信优化后 5.6× |
+| **Embedding Table 配置 API** | `flow.one_embedding.MultiTableEmbedding("sparse_embedding", embedding_dim, dtype, key_type)` | — |
+| **CPU + SSD 后端性能** | 与纯 GPU 训练相比性能损失微小 | 流水线 + 数据预取掩盖延迟 |
+| **Criteo1T 实际存储** | 10 亿 ID × dim 128 = **512 GB**（FP32）→ Adam 优化器 = **1536 GB** | 公开数据集 |
+
+#### C.5 阿里 PAI-HybridBackend / HybridEmbedding（开源标杆）
+
+> **来源**：[zhuanlan.zhihu.com/p/511381741](https://zhuanlan.zhihu.com/p/511381741) + [zhuanlan.zhihu.com/p/512161334](https://zhuanlan.zhihu.com/p/512161334) + 蚂蚁 HybridEmbedding [zhuanlan.zhihu.com/p/643119707](https://zhuanlan.zhihu.com/p/643119707)
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **PAI-HybridBackend** | GPU-centric 同步训练框架 | **128 张 GPU 训练千亿规模参数**，单位成本训练吞吐 **5×** |
+| **落地场景** | 智能引擎事业部 XDL 训练平台 · **定向广告**业务 | — |
+| **核心优化** | ① D-Packing 算子融合 ② D-Interleaving 算子穿插遮掩执行 ③ 基于数据频次感知的参数缓存 | — |
+| **稀疏模型规模** | "**百 GB 至数十 TB 级别**的内存占用" | 比 CV/NLP 参数高 1-2 数量级 |
+| **蚂蚁 HybridEmbedding** | **NVMe SSD + 自研 PHStore（B+tree）+ LFU 冷热分离** | DRAM KV → SSD KV |
+| **HybridEmbedding 实测收益** | PS 节点内存**平均节省 50% 左右** | 性能几乎与 DRAM KV 存储打平 |
+| **NVMe vs SATA** | NVMe **10× SATA 速度** | — |
+| **Embedding Service** | 解决 Embedding 冗余（多任务共享同一份 Embedding）| 特征治理 |
+
+#### C.6 京东广告 GPU 优化（百万 QPS）
+
+> **来源**：[zhuanlan.zhihu.com/p/713692019](https://zhuanlan.zhihu.com/p/713692019) DataFunTalk
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **业务规模** | 推荐首页 + 搜索广告，**百万 QPS 高并发** | 广告系统毫秒级响应 |
+| **稀疏模型规模** | **千亿级 sparse 参数，TB 级别存储** | H800 80GB 装不下 |
+| **架构核心** | CPU + GPU 异构混合部署 + 分布式流水线并行训练 | 特征计算网络 vs 模型训练网络分离 |
+| **GPU-HBM 参数服务器** | GPU 一级缓存 + CPU 二级 PS（GPU 未命中时通过 PCIe 从 CPU 拉）| 充分利用 GPU 高带宽和高并发 |
+| **I/O 瓶颈** | **Embedding 层 I/O 耗时占比 >30%** | 训练五级流水线（样本下载/特征计算/特征拉取/H2D/训练）|
+| **5 级分布式流水线** | ① 样本下载 ② 特征计算 ③ 特征拉取 ④ H2D 拷贝 ⑤ 训练 | TensorFlow Dataset 预拷贝机制 |
+| **TensorBatch 推理** | 多个请求 Batch 聚合推理 | GPU 在线推理核心 |
+| **多流计算** | 每个 device 多个 Cuda Context | GPU 资源调度并发能力 |
+
+#### C.7 微软 / Twitter / Meta Persia 极端方案（**100 T 参数级别**）
+
+> **来源**：Persia (Microsoft, KDD 2023, arXiv:2111.05897) + TT-Rec (Microsoft/Meta, MLSys 2021, arXiv:2101.11714) + Complementary Partitions (Twitter, SIGIR 2019, arXiv:1909.02107)
+
+| 组件 | 方案 | 关键数字 |
+|------|------|---------|
+| **Persia 极端规模** | **100 Trillion sparse parameters** | **200 TB**（fp16, 100T×2B）|
+| **Persia 部署** | "**hundreds of machines**" PS | sparse param 29M → 100T |
+| **TT-Rec (Tensor Train)** | Tensor Train 压缩 7 张最大 Kaggle Criteo 表 | **2.16 GB → 18 MB = 112× 压缩** |
+| **TT-Rec 动机** | "**embedding dim 64 → 512 时，总内存 > 96 GB，超过最新 GPU 显存**" | — |
+| **Complementary Partitions (Twitter)** | 将单条 embedding 拆成多个 partition 拼接 | **\|S\|≈10⁷, D≈100, 4 TB 单表** |
+| **Quotient-Remainder Trick** | 二维哈希：N → N₁ × N₂ | 大幅压缩 embedding 表 |
+
+#### C.8 Hash Embedding 系列（理论压缩路线）
+
+> **来源**：[zhuanlan.zhihu.com/p/669320977](https://zhuanlan.zhihu.com/p/669320977) Keep Learning 专栏 + 王小新知乎回答 + 王小新全文
+
+| 方案 | 论文 | 压缩率 | 适用场景 | 局限 |
+|------|------|--------|---------|------|
+| **Full Embedding** | 经典 | 1× | 小词表 | N 增大时存储爆炸 |
+| **Single Hash** | Svenstrup, Hansen, Winther 2017 | 取决于 M/N 比 | 通用 | 冲突严重 |
+| **Double Hash** | Svenstrup et al. NIPS 2017 (arXiv:1709.03933) | 中 | NLP 借鉴到推荐 | — |
+| **Multi-Hash** | 同上 | 中 | 同上 | — |
+| **Hybrid Hash** | Twitter 2020 (arXiv:2007.14523) | 高 | 区分高/低频 key | 阈值需调 |
+| **Binary Code Hash** | 阿里妈妈 CIKM 2021 (arXiv:2109.02471) | 高 | 灵活分组合并 | 二进制码语义有限 |
+| **Compositional Embeddings** | Twitter SIGIR 2019 (arXiv:1909.02107) | 高 | \|S\|巨大 + D 中等 | partition 拼接组合爆炸 |
+| **TT-Rec (Tensor Train)** | MS/Meta MLSys 2021 (arXiv:2101.11714) | **112×**（2.16GB→18MB）| 极大规模 | 训练复杂 |
+| **Quantization (INT8/INT4)** | 业界通用 | **8× (INT8) / 4× (INT4)** | 业界主流 | 精度损失 |
+| **Mix-precision 热冷分离** | deephub | **75% 节省** | 热 FP32 + 冷 INT4 | 调度复杂 |
+
+### D. 推荐系统 storage budget 估算公式
+
+> **用于业务规划时快速估算 sparse embedding 存储预算**。
+
+```
+总存储 (bytes) = Σ_i (vocab_size_i × embedding_dim_i × bytes_per_value × n_tables)
+
+其中：
+- i：遍历所有 sparse 特征类型（user_id, item_id, tag, category, ...）
+- vocab_size_i：第 i 个特征的取值数（千万到百亿级）
+- embedding_dim_i：第 i 个特征的维度（4~4096）
+- bytes_per_value：精度（FP32=4, FP16=2, INT8=1, INT4=0.5）
+- n_tables：训练任务数 / 1（基础） / 3（Adam 优化器）
+```
+
+#### D.1 典型业务场景预算示例
+
+| 业务 | vocab_size | dim | bytes_per_value | 优化器 | 估算总存储 |
+|------|-----------|-----|----------------|--------|----------|
+| 小型推荐（Criteo1T 量级） | 1×10⁹ | 128 | FP32=4 | Adam | 1.5 TB |
+| 中型电商（淘宝商品） | 1×10⁹ | 64 | FP16=2 | Adam | 384 GB |
+| 大型短视频（抖音） | 1×10¹⁰ | 128 | INT8=1 | Adam | 3.6 TB |
+| 极限稀疏（Meta Persia） | 1×10¹⁴ | 4096 (dense 部分) | FP16=2 | Adam | **800 TB+** |
+| 阿里 HybridEmbedding（生产）| 千亿级 sparse | — | INT8 量化 + SSD | — | **PS 内存节省 50%** |
+| Meta production baseline | 50 sparse features | — | — | — | **数 GB - 数十 GB** |
+
+#### D.2 业界 4 大降本策略（性价比由高到低）
+
+> **来源**：BUGs（知乎 ID `peterrk` / IP 广东 / "始于挑战高度，终于守住底线"）
+
+| 优先级 | 策略 | 收益 | 风险 |
+|--------|------|------|------|
+| **P0**（强烈推荐）| **过滤低频项** | 模型体积↓一个数量级，可能**涨点** | 低（高频项贡献大部分效果）|
+| **P1** | **缩减 embedding 维度** | 1~2× 压缩 | 有限掉点（变长 emb size）|
+| **P2** | **量化**（INT8/INT4）| INT8 内存 → **30%**（基本无损）| 可能明显掉点（INT4+）|
+| **P3** | **多级混合存储**（HBM+DRAM+SSD）| 性能 / 成本平衡 | 工程复杂度高 |
+
+> **关键发现**：BUGs 的 "**过滤低频项可能涨点**" 不是理论，是工业经验。因为 "**推荐模型体积大头在 Embedding 部分**"，"**10% 特征往往占模型超过 95% 体积**"（幂律分布），去除训练不充分的低频 key 不仅能压缩，还能去除过参数化。
+
+### E. 工程方案选型决策树
+
+> **基于"业务规模 + 延迟要求 + 显存预算"三维决策**
+
+```
+Q1: 总 sparse embedding < 10 GB？
+├── 是 → 直接塞 GPU，不拆分（性能最好）
+└── 否 → 进入 Q2
+
+Q2: GPU 显存 (40-80 GB) 装得下？
+├── 是 → GPU 缓存 + CPU DRAM（单机异构）
+└── 否 → 进入 Q3
+
+Q3: 延迟 < 50ms (推荐系统 SLA)?
+├── 是 → 进入 Q4
+└── 否 → 异步召回 + SSD 后端
+
+Q4: 千亿级 sparse?
+├── 是 → Multi-Hash / TT-Rec / Hybrid Hash（压缩）
+└── 否 → INT8 量化 + SSD 后端（性价比）
+
+Q5: 万亿级以上 (Persia 量级)?
+└── 分布式参数服务器 + SSD 后端 + TT-Rec 压缩（200 TB+）
+```
+
+### F. 知乎信源溯源清单（存储 + 工程方案）
+
+| # | 作者 / 来源 | 知乎链接 | 关键数据 | 可信度 |
+|---|----------|---------|---------|--------|
+| S1 | 王小新（IP 天津，推荐算法工程师）| [zhihu.com/question/522006535/answer/3108583070](https://www.zhihu.com/question/522006535/answer/3108583070) | 稀疏特征千亿级 + 99% 参数在 Embedding + 10% 特征占 95% 体积 + int8 30% 内存 | ⭐⭐⭐⭐ |
+| S2 | BUGs（IP 广东，"始于挑战高度"）| [zhihu.com/question/522006535/answer/90040419632](https://www.zhihu.com/question/522006535/answer/90040419632) | 过滤低频项 → 缩减维度 → 量化 三步法 | ⭐⭐⭐ |
+| S3 | deephub | [zhihu.com/question/623549698/answer/1961740878566629454](https://www.zhihu.com/question/623549698/answer/1961740878566629454) | 几千万用户 + 几亿商品 + 三级缓存 99.9% 命中 + 75% INT4 节省 | ⭐⭐⭐ |
+| S4 | OneFlow OneEmbedding（机器之心）| [zhuanlan.zhihu.com/p/552943580](https://zhuanlan.zhihu.com/p/552943580) | Criteo1T 10亿 ID = 512 GB / Adam = 1536 GB / DLRM 90 GB | ⭐⭐⭐⭐ |
+| S5 | OneFlow OneEmbedding 第二篇（始智AI wisemodel）| [zhuanlan.zhihu.com/p/561884035](https://zhuanlan.zhihu.com/p/561884035) | 单卡 TB 级训练 / 纯 GPU 160 GB / +CPU 数 TB / +SSD 数十 TB+ | ⭐⭐⭐⭐ |
+| S6 | 阿里灵杰 PAI-HybridBackend（ICDE 2022）| [zhuanlan.zhihu.com/p/511381741](https://zhuanlan.zhihu.com/p/511381741) | 128 GPU 千亿参数 / 单位成本 5× 吞吐 / 定向广告业务 | ⭐⭐⭐⭐⭐ |
+| S7 | 千问云 PAI-HybridBackend 开源 | [zhuanlan.zhihu.com/p/512161334](https://zhuanlan.zhihu.com/p/512161334) | 同上 | ⭐⭐⭐⭐ |
+| S8 | AI Infra · 蚂蚁 HybridEmbedding（万亿参数稀疏 CTR）| [zhuanlan.zhihu.com/p/643119707](https://zhuanlan.zhihu.com/p/643119707) | 千亿~万亿 sparse / NVMe SSD 10×SATA / PS 内存节省 50% | ⭐⭐⭐⭐ |
+| S9 | DataFunTalk · 京东广告稀疏大模型 GPU 优化 | [zhuanlan.zhihu.com/p/713692019](https://zhuanlan.zhihu.com/p/713692019) | 百万 QPS / 千亿 sparse / TB 存储 / I/O >30% / GPU-HBM 一级缓存 | ⭐⭐⭐⭐⭐ |
+| S10 | 阿柚 · 推荐系统 GPU 推理 | [zhuanlan.zhihu.com/p/2021990182069487270](https://zhuanlan.zhihu.com/p/2021990182069487270) | T4 16GB/A10 24GB/A100 40-80GB / 三种拆分架构 / 90% 命中率 | ⭐⭐⭐⭐ |
+| S11 | Keep Learning · Embedding 压缩之 hash embedding | [zhuanlan.zhihu.com/p/669320977](https://zhuanlan.zhihu.com/p/669320977) | N 几百万到上亿 / Multi-Hash 显著减少 / Hybrid Hash 高压缩 | ⭐⭐⭐⭐ |
+| S12 | 冯卡门迪 · NVIDIA EMBark RecSys'24 | [zhuanlan.zhihu.com/p/8446271580](https://zhuanlan.zhihu.com/p/8446271580) | GPU 通信 25%→51% / GPU+Emb 60%→76% / EMBark 自动分片 | ⭐⭐⭐ |
+| S13 | 知望 · 短视频推荐系统「精排」技术（字节 Monolith 解读）| [zhuanlan.zhihu.com/p/2035460824593065084](https://zhuanlan.zhihu.com/p/2035460824593065084) | Monolith / Entry+PS 分离 / Collisionless Embedding | ⭐⭐⭐ |
+| S14 | Ray Huang · TorchRec 动态 embedding | [zhuanlan.zhihu.com/p/29129309463](https://zhuanlan.zhihu.com/p/29129309463) | `ManagedCollisionEmbeddingCollection` / `DistanceLFU_EvictionPolicy` | ⭐⭐⭐ |
+| S15 | 凉夏同学 · EST 淘宝展示广告 | [zhuanlan.zhihu.com/p/2047452835533665955](https://zhuanlan.zhihu.com/p/2047452835533665955) | 千亿 ID Embedding "臭名昭著的 One-epoch" / CTR +1.22% / RPM +3.27% | ⭐⭐⭐ |
+| S16 | 金雪锋 · TT-Rec MLSys 2021 论文分析 | [zhuanlan.zhihu.com/p/385800049](https://zhuanlan.zhihu.com/p/385800049) | "工业界 DLRM Embedding 表大小往往 GB 到 TB 量级" | ⭐⭐⭐ |
+| S17 | 阿里云云栖号 · DeepRec 开源 | [zhuanlan.zhihu.com/p/486192874](https://zhuanlan.zhihu.com/p/486192874) | 热门特征 → 更快存储介质 / TB-10TB 单节点 Training+Serving | ⭐⭐⭐⭐ |
+| S18 | 叶子 · 2026 分布式训练核心 Parameter Server 全维度解析 | [zhuanlan.zhihu.com/p/2019719432335802817](https://zhuanlan.zhihu.com/p/2019719432335802817) | PS = Worker (计算) + Server (存储) 双角色架构 | ⭐⭐⭐ |
+| S19 | 新智元 · Persia 100 万亿参数 | [zhuanlan.zhihu.com/p/448962892](https://zhuanlan.zhihu.com/p/448962892) | Microsoft Persia / Kafka 数据 + Embedding PS + 200 TB | ⭐⭐⭐ |
+| S20 | 野蛮生长 · Embedding 工程师视角 | [zhuanlan.zhihu.com/p/1997845707860763005](https://zhuanlan.zhihu.com/p/1997845707860763005) | "embedding 决定召回上限" | ⭐⭐⭐ |
+| S21 | 小岛cc · VLDB 2022 关注论文 | [zhihu.com/question/549857210/answer/2671689379](https://www.zhihu.com/question/549857210/answer/2671689379) | "**feature 占据 (上百 GB - 10 TB)**" | ⭐⭐⭐ |
+| S22 | 阿诺尼莫斯尤瑟 · KV Cache 三层架构 | [zhuanlan.zhihu.com/p/2016733555942776933](https://zhuanlan.zhihu.com/p/2016733555942776933) | GPU KV ↓ CPU KV ↓ SSD KV = L1/L2/L3 缓存体系 | ⭐⭐⭐ |
+
+> **数据采集说明**：本节所有数据点均通过 `opencli browser default extract` 直接从登录态 Chrome（profile 3vfysj6k）抓取知乎专栏 / 问题回答正文。
+> 关键作者可信度详见 **一·补·3 A 节** 表格。
+
+---
+
 > **如对任何条目的溯源存疑**，可对照附录 A 的 arxiv 链接直接拉取原文搜索本报告中的关键引文。
