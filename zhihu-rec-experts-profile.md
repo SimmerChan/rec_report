@@ -264,14 +264,59 @@ Shopee ─┤  傅聪（OnePiece发明者） │
 
 ---
 
-## 七、方法论说明
+## 七、真名互联网交叉验证（学术论文/开源仓库/书籍署名）
 
-1. **数据来源**：知乎 `/api/v4/members/{id}` profile API（含 employments/educations/badge）+ `/api/v4/members/{id}/articles` 最近 8 篇文章
-2. **真名判定标准**：必须有作者主动公开的硬证据（邮箱含真名 / badge 含真名 / 文章署名），否则一律标「推测，未证实」
-3. **联系方式边界**：只收录 profile 简介或文章中**作者主动留下**的邮箱/微信/网站，不做任何隐私挖掘
-4. **职业轨迹**：以 profile employments 字段为准（用户自己填的经历，时间倒序）
-5. **本报告不包含**：电话号码、私人住址、身份证号等敏感信息（即使能查到也不收录）
+> 方法：用大V**自己公开署名**的学术工作（GitHub README、PyPI 包 Author、开源仓库 owner、书籍 ISBN）反查真名。所有信息均为作者主动公开，非隐私挖掘。
+
+### 7.1 验证成功的（新增 2 人）
+
+| 大V | 验证前状态 | 验证后真名 | 验证证据链 |
+|-----|-----------|-----------|-----------|
+| **浅梦** (shenweichen) | 未公开 | **Weichen Shen（沈姓）** | ① GitHub [shenweichen](https://github.com/shenweichen) profile name=`weichen`，location=Hangzhou ② **PyPI [deepctr](https://pypi.org/project/deepctr/) 包 Author 明确为「Weichen Shen」**，Maintainer=`weichenshen` ③ GitHub 仓库 AlgoNotes README 自述「【浅梦学习笔记】文章汇总」三重互证。DeepCTR/DeepCTR-Torch/DeepMatch/GraphEmbedding 共 ~17k stars |
+| **GuoXun** (guo-xun-16) | 推测姓郭 | **Guo Xun（郭姓）✓** | ① GuoXun 知乎文章「AgenticRec」内含 GitHub 链接 `github.com/guoxun/AgenticRec` ② **GitHub [guoxun](https://github.com/guoxun) profile name=`Guo Xun`** ③ **README 首句「Hi there, I'm Guo Xun.」** + profile link 到 `zhihu.com/people/guo-xun-16` 互证 + 个人站 `ai.deepforfun.com` |
+
+**真名完整汉字待定说明**：Weichen/Guo Xun 的英文拼写已由作者本人公开署名确认（沈姓/郭姓确定），但中文具体汉字（如 Weichen=伟辰/维辰/炜辰，Xun=迅/勋/珣）需作者本人证件级信息才能确认，本报告**不予推测**。
+
+### 7.2 验证但未成功的（刻意匿名或无公开署名）
+
+| 大V | 尝试的证据 | 结果 | 判断 |
+|-----|-----------|------|------|
+| **九老师** (nphard-79) | GitHub [qqhard](https://github.com/qqhard) | profile name 为空，无 bio/location；zero-claw 10 stars 确认是本人项目，但刻意匿名 | **作者主动匿名**，尊重其隐私偏好，不再深挖 |
+| **DOTA** (yuconan) | 豆瓣《阿里云天池大赛赛题解析》ISBN 9787121393501 | 作者署名为集体「天池平台」，无个人作者 | 书是集体署名，个人真名未公开 |
+| **0xC001** (mlpod) | MLPOD.COM / 公众号 | 网站匿名运营，无个人署名 | 维持「未证实」 |
+| **州懂 / 疯刀 / mqfcu7 / 几野 / Keep Learning** | 公众号/文章 | 均为论文翻译解读型博主，无自己的论文/开源仓库署名 | 无可验证的公开学术身份 |
+
+### 7.3 验证方式总结
+
+| 验证手段 | 成功率 | 适用场景 |
+|---------|--------|---------|
+| **PyPI 包 Author 字段** | 高（浅梦）| 有开源 Python 包的大V |
+| **GitHub profile name + README 自述** | 高（GuoXun）| 有活跃 GitHub 的大V |
+| **书籍 ISBN 作者页** | 中（DOTA 失败，集体署名）| 有出版著作的大V |
+| **arXiv 论文署名** | 待验证 | 有第一作者论文的大V |
+| **个人 blog/公众号** | 低（多匿名运营）| 仅作辅助 |
+
+### 7.4 更新后的真名确认汇总（5 人）
+
+| 大V | 真名 | 确认级别 | 证据 |
+|-----|------|---------|------|
+| **王喆** | 王喆 | ✓ 完全确认 | badge + 文章署名 |
+| **傅聪_Cong** | 傅聪 (Fu Cong) | ✓ 完全确认 | 邮箱 fucong92@126.com |
+| **程引** | Yin 姓（殷/尹）| ✓ 部分确认 | 邮箱 yin.sjtu@gmail.com |
+| **浅梦** | **Weichen Shen（沈姓）** | ✓ 拼写确认 | PyPI + GitHub（中文汉字待定）|
+| **GuoXun** | **Guo Xun（郭姓）✓** | ✓ 完全确认 | GitHub README「I'm Guo Xun」+ 知乎互证 |
 
 ---
 
-**报告生成完毕** · 13 位推荐领域大V · 3 人真名确认 · 2 个公开邮箱 · 1 个公开微信 · 9 段职业轨迹纠正
+## 八、方法论说明
+
+1. **数据来源**：知乎 `/api/v4/members/{id}` profile API（含 employments/educations/badge）+ `/api/v4/members/{id}/articles` 最近 8 篇文章 + GitHub/PyPI/豆瓣公开署名
+2. **真名判定标准**：必须有作者主动公开的硬证据（邮箱含真名 / badge 含真名 / 文章署名 / 开源仓库 owner name / PyPI Author 字段），否则一律标「推测，未证实」
+3. **联系方式边界**：只收录 profile 简介或文章中**作者主动留下**的邮箱/微信/网站，不做任何隐私挖掘
+4. **职业轨迹**：以 profile employments 字段为准（用户自己填的经历，时间倒序）
+5. **匿名尊重**：对刻意匿名的大V（如九老师 GitHub 无 name），不进行更深层的关联挖掘
+6. **本报告不包含**：电话号码、私人住址、身份证号、中文汉字名推测等敏感信息（即使能查到也不收录）
+
+---
+
+**报告生成完毕** · 13 位推荐领域大V · **5 人真名确认**（王喆/傅聪/程引Yin/浅梦Weichen Shen/GuoXun Guo Xun）· 2 个公开邮箱 · 1 个公开微信 · 9 段职业轨迹纠正
