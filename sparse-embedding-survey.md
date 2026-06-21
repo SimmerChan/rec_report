@@ -874,6 +874,8 @@ Q5: 万亿级以上 (Persia 量级)?
 
 #### 4.7.5 知乎用户图谱 · 多数据源交叉网络分析（v5 反向网络扩展）
 
+> **完整报告见**：[`zhihu-rec-experts-profile.md`](./zhihu-rec-experts-profile.md)（13 位推荐领域大V深度 Profile，含真名/公司/学历/公开联系方式/开源项目）
+>
 > **完整报告见**：[`zhihu-user-graph.md`](./zhihu-user-graph.md)（v5 反向网络扩展版，34 KB）
 >
 > **2026-06-21 抓取** · 登录账号 SimmerChan · 涉及 **1285 位用户**
